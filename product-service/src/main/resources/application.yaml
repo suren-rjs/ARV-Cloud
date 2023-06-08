@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: ARV-PRODUCT-SERVICE
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://ec2-16-170-228-203.eu-north-1.compute.amazonaws.com:8761/eureka
+
+  instance:
+    hostname: localhost
