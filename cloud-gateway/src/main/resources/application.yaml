@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: ARV-CLOUD-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: arv-user-service
+          uri: lb://ARV-USER-SERVICE
+          predicates:
+            - Path=/users/**, /admin/**, /notification/**, /auth/**
+        - id: arv-product-service
+          uri: lb://ARV-PRODUCT-SERVICE
+          predicates:
+            - Path=/help, /public/**, /products/**, /productCategories/**, /productSubCategories/**, /productSubSubCategories/**
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+            defaultZone: http://ec2-16-170-228-203.eu-north-1.compute.amazonaws.com:8761/eureka
+
+  instance:
+    hostname: localhost

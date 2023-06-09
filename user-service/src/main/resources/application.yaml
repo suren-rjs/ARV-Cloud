@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ARV-ORDER-SERVICE
+    name: ARV-USER-SERVICE
 
 eureka:
   client:
