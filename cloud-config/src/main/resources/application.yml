@@ -1,0 +1,21 @@
+server:
+  port: 8089
+spring:
+  application:
+    name:  CONFIG-SERVER
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/suren-rjs/arv-server-config
+        default-label: main
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://ec2-16-170-228-203.eu-north-1.compute.amazonaws.com:8761/eureka
+
+  instance:
+    hostname: localhost

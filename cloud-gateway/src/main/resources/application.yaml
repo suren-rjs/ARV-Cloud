@@ -1,7 +1,6 @@
 spring:
   application:
     name: ARV-CLOUD-GATEWAY
-  cloud:
     gateway:
       routes:
         - id: arv-user-service
@@ -22,13 +21,3 @@ spring:
               args:
                 name: arv-product-service
                 fallbackuri: forward:/productFallBack
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://ec2-16-170-228-203.eu-north-1.compute.amazonaws.com:8761/eureka
-
-  instance:
-    hostname: localhost
