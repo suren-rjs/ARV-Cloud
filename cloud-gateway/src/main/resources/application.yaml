@@ -8,17 +8,27 @@ spring:
           uri: lb://ARV-USER-SERVICE
           predicates:
             - Path=/users/**, /admin/**, /notification/**, /auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: arv-user-service
+                fallbackuri: forward:/userFallBack
         - id: arv-product-service
           uri: lb://ARV-PRODUCT-SERVICE
           predicates:
             - Path=/help, /public/**, /products/**, /productCategories/**, /productSubCategories/**, /productSubSubCategories/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: arv-product-service
+                fallbackuri: forward:/productFallBack
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-            defaultZone: http://ec2-16-170-228-203.eu-north-1.compute.amazonaws.com:8761/eureka
+      defaultZone: http://ec2-16-170-228-203.eu-north-1.compute.amazonaws.com:8761/eureka
 
   instance:
     hostname: localhost
