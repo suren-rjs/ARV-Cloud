@@ -34,8 +34,11 @@ public class ProductCategoryController {
     public ProductSubSubCategoryRepository productSubSubCategoryRepository;
 
     @GetMapping("/productCategories")
-    public ResponseEntity<?> getCategories() {
-        return globalCommonService.getResponseOfObject(Optional.of(productCategoryRepository.findAll()), HttpStatus.OK);
+    public ResponseEntity<?> getCategories(@RequestParam("keyword") String keyword) {
+        if (keyword.replaceAll(" ", "").isEmpty()) {
+            return globalCommonService.getResponseOfObject(Optional.of(productCategoryRepository.findAll()), HttpStatus.OK);
+        }
+        return globalCommonService.getResponseOfObject(Optional.of(productCategoryRepository.findByNameContainingIgnoreCase(keyword)), HttpStatus.OK);
     }
 
     @GetMapping("/productCategories/{id}")
@@ -84,8 +87,11 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubCategories")
-    public ResponseEntity<?> getSubCategories(@RequestParam String categoryId) {
-        return globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findAllByCategoryId(categoryId)), HttpStatus.OK);
+    public ResponseEntity<?> getSubCategories(@RequestParam String categoryId, @RequestParam String keyword) {
+        if (keyword.replaceAll(" ", "").isEmpty()) {
+            return globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findAllByCategoryId(categoryId)), HttpStatus.OK);
+        }
+        return globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findOneByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword)), HttpStatus.OK);
     }
 
     @GetMapping("/productSubCategories/{id}")
@@ -134,8 +140,11 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubSubCategories")
-    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam String subCategoryId) {
-        return globalCommonService.getResponseOfObject(Optional.of(productSubSubCategoryRepository.findAllByCategoryIdAndSubCategoryId(categoryId, subCategoryId)), HttpStatus.OK);
+    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam String subCategoryId, @RequestParam String keyword) {
+        if (keyword.replaceAll(" ", "").isEmpty()) {
+            globalCommonService.getResponseOfObject(Optional.of(productSubSubCategoryRepository.findAllByCategoryIdAndSubCategoryId(categoryId, subCategoryId)), HttpStatus.OK);
+        }
+        return globalCommonService.getResponseOfObject(Optional.of(productSubSubCategoryRepository.findOneByCategoryIdAndSubCategoryIdAndNameContainingIgnoreCase(categoryId, subCategoryId, keyword)), HttpStatus.OK);
     }
 
     @GetMapping("/productSubSubCategories/{id}")

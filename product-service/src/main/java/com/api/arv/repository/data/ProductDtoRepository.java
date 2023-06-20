@@ -20,4 +20,6 @@ public interface ProductDtoRepository {
     <S extends ProductItem> List<ProductItem> getAllProducts();
 
     void saveAll(List<ProductItemDTO> productItemDTOList);
+
+    List<ProductItem> search(String keyword, double priceFrom, double priceTo);
 }
