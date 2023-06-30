@@ -1,0 +1,17 @@
+package com.arv.api.repository.crud;
+
+import com.arv.api.model.document.ProductSubCategory;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface ProductSubCategoryRepository extends MongoRepository<ProductSubCategory, String> {
+    Optional<ProductSubCategory> findOneById(String id);
+
+    <S extends ProductSubCategory> List<S> findAllByCategoryId(String categoryId);
+
+    Optional<ProductSubCategory> findOneByCategoryIdAndName(String categoryId, String name);
+
+    Optional<ProductSubCategory> findOneByCategoryIdAndNameContainingIgnoreCase(String categoryId, String name);
+}

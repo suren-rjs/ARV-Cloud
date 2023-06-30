@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: ARV-CLOUD-GATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: arv-admin-service
+          uri: lb://ARV-IDENTITY-SERVICE
+          predicates:
+            - Path=/admin/**
+          filters:
+            - AdminFilter
+
+        - id: arv-identity-service
+          uri: lb://ARV-IDENTITY-SERVICE
+          predicates:
+            - Path=/auth-help, /auth/**, /swagger-ui/**, /v3/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: arv-identity-service
+                fallbackuri: forward:/authFallBack
+
+        - id: arv-product-manager-service
+          uri: lb://ARV-PRODUCT-SERVICE
+          predicates:
+            - Path=/products, /productCategories, /productSubCategories, /productSubSubCategories, /products/*, /productCategories/**, /productSubCategories/**, /productSubSubCategories/**
+          filters:
+            - ManagerFilter
+
+        - id: arv-product-service
+          uri: lb://ARV-PRODUCT-SERVICE
+          predicates:
+            - Path=/, /help, /public/products, /swagger-ui/**, /v3/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: arv-product-service
+                fallbackuri: forward:/productFallBack
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 10000
+ribbon:
+  ConnectTimeout: 3000
+  ReadTimeout: 10000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      #      defaultZone: http://ec2-16-171-32-172.eu-north-1.compute.amazonaws.com:8761/eureka
+      defaultZone: http://192.168.2.5:8761/eureka
+  instance:
+    hostname: 192.168.2.5
+
+
+#    private final String[] MANAGER_END_POINTS = {"/products/**", "/productCategories", "/productSubCategories", "/productSubSubCategories", "/notification"};

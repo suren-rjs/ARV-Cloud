@@ -1,0 +1,6 @@
+spring:
+  cloud:
+    config:
+      uri:
+#        - http://ec2-35-172-119-179.compute-1.amazonaws.com:9196
+        - http://192.168.2.5:9196
