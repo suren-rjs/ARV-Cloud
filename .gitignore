@@ -1,5 +1,9 @@
 /auth-service/.idea/
 /cloud-gateway/.idea/
 /hystrix-dashboard/.idea/
-/product-service/.idea/
 /service-registry/.idea/
+/auth-service/target/
+/cloud-gateway/target/
+/hystrix-dashboard/target/
+/service-registry/target/
+/order-service/

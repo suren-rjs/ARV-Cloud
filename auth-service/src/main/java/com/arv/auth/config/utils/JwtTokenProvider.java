@@ -55,9 +55,7 @@ public class JwtTokenProvider {
 
     // Get authorities from token
     public UsernamePasswordAuthenticationToken getAuthenticationToken(final String token, final UserDetails userDetails) {
-        final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-
-        final JwtParser jwtParser = Jwts.parser().setSigningKey(key);
+        final JwtParser jwtParser = Jwts.parser().setSigningKey(SECRET);
         final Jws<Claims> claimsJws = jwtParser.parseClaimsJws(token);
         final Claims claims = claimsJws.getBody();
 
@@ -89,10 +87,8 @@ public class JwtTokenProvider {
 
     // Get claims from JWT_TOKEN
     private Claims getAllClaimsFromToken(String token) {
-        final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-
         return Jwts.parser()
-                .setSigningKey(key)
+                .setSigningKey(SECRET)
                 .parseClaimsJws(token)
                 .getBody();
     }

@@ -110,7 +110,7 @@ public class GlobalCommonService {
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         List list = new ArrayList<>();
-        Object[] objects = restTemplate.exchange(uri, method, headerEntity == null ? entity : headerEntity, Object[].class).getBody();
+        Object[] objects = restTemplate.exchange(uri, method, headerEntity, Object[].class).getBody();
         ObjectMapper mapper = new ObjectMapper();
         if (objects != null)
             list = Arrays.stream(objects).map(object -> mapper.convertValue(object, requiredClass)).collect(Collectors.toList());
@@ -118,8 +118,14 @@ public class GlobalCommonService {
         return list;
     }
 
+
     public Object getForObject(String uri, Class requestedClass) {
         return restTemplate.getForObject(uri, requestedClass);
+    }
+
+
+    public Object postForObject(String uriWithParams, HttpEntity<String> entity, Class<?> requestedClass) {
+        return restTemplate.postForObject(uriWithParams, entity, requestedClass);
     }
 
     public int getRandomInt(int size) {

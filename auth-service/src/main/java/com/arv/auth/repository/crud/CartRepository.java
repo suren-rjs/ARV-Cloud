@@ -11,4 +11,6 @@ public interface CartRepository extends MongoRepository<Cart, String> {
     void deleteAllByUserId(String id);
 
     List<Cart> findAllByUserId(String id);
+
+    boolean existsByProductIdAndUserId(String id, String userId);
 }

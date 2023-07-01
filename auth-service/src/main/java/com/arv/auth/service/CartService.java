@@ -1,7 +1,6 @@
 package com.arv.auth.service;
 
 import com.arv.auth.helper.GlobalCommonService;
-import com.arv.auth.model.document.Address;
 import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.dto.request.cart.CartDto;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public class CartService implements CartDtoRepository {
     @Autowired
@@ -24,6 +24,8 @@ public class CartService implements CartDtoRepository {
         User user = globalCommonService.getCurrentUser();
         Cart item = (Cart) globalCommonService.convertObject(cartDto, Cart.class);
         item.setUserId(user.getId());
+        if (cartRepository.existsByProductIdAndUserId(cartDto.getProductId(), user.getId()))
+            throw new RuntimeException("Item already exist!");
         cartRepository.save(item);
     }
 

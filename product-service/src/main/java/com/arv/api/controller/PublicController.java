@@ -30,7 +30,7 @@ public class PublicController {
         return globalCommonService.getResponseOfObject(Optional.of(productService.search(keyword, priceFrom, priceTo, page)), HttpStatus.OK);
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public ResponseEntity<?> getAllProductsByIds(@RequestBody Products products, @RequestParam(required = false, defaultValue = "0") int page) {
         return globalCommonService.getResponseOfObject(Optional.of(productService.findProductByIdsIn(products.getIds(), page)), HttpStatus.OK);
     }
