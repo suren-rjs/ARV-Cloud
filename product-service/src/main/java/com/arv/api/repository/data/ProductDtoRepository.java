@@ -2,6 +2,7 @@ package com.arv.api.repository.data;
 
 import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.dto.request.product.ProductItemDTO;
+import com.arv.api.model.dto.response.ProductList;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ public interface ProductDtoRepository {
 
     void saveAll(List<ProductItemDTO> productItemDTOList);
 
-    List<ProductItem> search(String keyword, double priceFrom, double priceTo, int page);
+    ProductList search(String keyword, double priceFrom, double priceTo, int page);
 
-    List<ProductItem> findProductByIdsIn(String[] ids, int page);
+    ProductList findProductByIdsIn(String[] ids, int page);
 }
