@@ -1,14 +1,17 @@
 package com.arv.api.controller;
 
-import com.arv.api.model.document.ProductSubCategory;
-import com.arv.api.repository.crud.ProductCategoryRepository;
-import com.arv.api.repository.crud.ProductSubCategoryRepository;
 import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductCategory;
+import com.arv.api.model.document.ProductSubCategory;
 import com.arv.api.model.document.ProductSubSubCategory;
+import com.arv.api.repository.crud.ProductCategoryRepository;
+import com.arv.api.repository.crud.ProductSubCategoryRepository;
 import com.arv.api.repository.crud.ProductSubSubCategoryRepository;
 import com.arv.api.service.ProductCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,11 +37,15 @@ public class ProductCategoryController {
     public ProductSubSubCategoryRepository productSubSubCategoryRepository;
 
     @GetMapping("/productCategories")
-    public ResponseEntity<?> getCategories(@RequestParam("keyword") String keyword) {
+    public ResponseEntity<?> getCategories(@RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 15);
+        Page<ProductCategory> page;
         if (keyword.replaceAll(" ", "").isEmpty()) {
-            return globalCommonService.getResponseOfObject(Optional.of(productCategoryRepository.findAll()), HttpStatus.OK);
+            page = productCategoryRepository.findAll(pageable);
+            return globalCommonService.getResponseOfObject(Optional.of(page.getContent()), HttpStatus.OK);
         }
-        return globalCommonService.getResponseOfObject(Optional.of(productCategoryRepository.findByNameContainingIgnoreCase(keyword)), HttpStatus.OK);
+        page = productCategoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        return globalCommonService.getResponseOfObject(Optional.of(page.getContent()), HttpStatus.OK);
     }
 
     @GetMapping("/productCategories/{id}")
@@ -77,7 +84,7 @@ public class ProductCategoryController {
     public ResponseEntity<?> deleteCategoryById(@PathVariable("id") String id) {
         String message = "Invalid id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
-        if (!productCategoryRepository.findOneById(id).isPresent()) {
+        if (!productCategoryRepository.existsById(id)) {
             return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
         }
         message = "Category deleted";
@@ -87,7 +94,7 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubCategories")
-    public ResponseEntity<?> getSubCategories(@RequestParam String categoryId, @RequestParam String keyword) {
+    public ResponseEntity<?> getSubCategories(@RequestParam String categoryId, @RequestParam(required = false, defaultValue = "") String keyword) {
         if (keyword.replaceAll(" ", "").isEmpty()) {
             return globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findAllByCategoryId(categoryId)), HttpStatus.OK);
         }
@@ -140,7 +147,7 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubSubCategories")
-    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam String subCategoryId, @RequestParam String keyword) {
+    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam String subCategoryId, @RequestParam(required = false, defaultValue = "") String keyword) {
         if (keyword.replaceAll(" ", "").isEmpty()) {
             globalCommonService.getResponseOfObject(Optional.of(productSubSubCategoryRepository.findAllByCategoryIdAndSubCategoryId(categoryId, subCategoryId)), HttpStatus.OK);
         }

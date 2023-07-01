@@ -47,6 +47,7 @@ public class UserService implements UserDtoRepository, UserDetailsService {
         user.setUsername(signUp.getPhone());
         user.setPhone(signUp.getPhone());
         user.setEmail(signUp.getEmail());
+        user.setProfileName(signUp.getUsername());
         user.setPassword(bCryptPasswordEncoder.encode(signUp.getUid()));
         user.setActiveStatus(true);
 

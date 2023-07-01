@@ -1,6 +1,8 @@
 package com.arv.api.repository.crud;
 
 import com.arv.api.model.document.ProductItem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -10,17 +12,18 @@ import java.util.Optional;
 public interface ProductItemRepository extends MongoRepository<ProductItem, String> {
     <S extends ProductItem> Optional<S> findOneById(String id);
 
-    List<ProductItem> findByProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description);
+    Page<ProductItem> findByProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
 
-    List<ProductItem> findBySellingPriceBetween(double minSellingPrice, double maxSellingPrice);
+    Page<ProductItem> findBySellingPriceBetween(double minSellingPrice, double maxSellingPrice, Pageable pageable);
 
-    List<ProductItem> findByMrpPriceBetween(double minMrpPrice, double maxMrpPrice);
+    Page<ProductItem> findByMrpPriceBetween(double minMrpPrice, double maxMrpPrice, Pageable pageable);
 
-    List<ProductItem> findBySellingPriceGreaterThanEqual(double minSellingPrice);
+    Page<ProductItem> findBySellingPriceGreaterThanEqual(double minSellingPrice, Pageable pageable);
 
-    List<ProductItem> findByMrpPriceGreaterThanEqual(double minSellingPrice);
+    Page<ProductItem> findByMrpPriceGreaterThanEqual(double minSellingPrice, Pageable pageable);
 
-    List<ProductItem> findBySellingPriceLessThanEqual(double maxSellingPrice);
+    Page<ProductItem> findBySellingPriceLessThanEqual(double maxSellingPrice, Pageable pageable);
 
-    List<ProductItem> findByMrpPriceLessThanEqual(double maxMrpPrice);
+    Page<ProductItem> findByMrpPriceLessThanEqual(double maxMrpPrice, Pageable pageable);
+    Page<ProductItem> findAllByIdIn(String[] ids, Pageable pageable);
 }

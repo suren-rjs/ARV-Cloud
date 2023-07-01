@@ -1,6 +1,8 @@
 package com.arv.api.repository.crud;
 
 import com.arv.api.model.document.ProductCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -11,5 +13,5 @@ public interface ProductCategoryRepository extends MongoRepository<ProductCatego
 
     Optional<ProductCategory> findOneByName(String name);
 
-    List<ProductCategory> findByNameContainingIgnoreCase(String name);
+    Page<ProductCategory> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }

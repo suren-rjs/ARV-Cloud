@@ -1,8 +1,8 @@
 package com.arv.api.service;
 
+import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.document.ProductSubCategory;
-import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductSubSubCategory;
 import com.arv.api.model.dto.request.product.ProductItemDTO;
 import com.arv.api.repository.crud.ProductItemRepository;
@@ -11,6 +11,8 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -71,8 +73,7 @@ public class ProductService implements ProductDtoRepository {
 
     @Override
     public <S extends ProductItem> Optional<S> getById(String id) throws Exception {
-        Optional<ProductItem> productItem = productItemRepository.findOneById(id);
-        if (productItem.isPresent()) {
+        if (productItemRepository.existsById(id)) {
             return productItemRepository.findOneById(id);
         } else {
             throw new Exception("Product not exist");
@@ -104,14 +105,15 @@ public class ProductService implements ProductDtoRepository {
     }
 
     @Override
-    public List<ProductItem> search(String keyword, double priceFrom, double priceTo) {
-        List<ProductItem> productsByNameOrDescription = productItemRepository.findByProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword);
-        List<ProductItem> productsBySellingPrice = productItemRepository.findBySellingPriceBetween(priceFrom - 1, priceTo + 1);
-        List<ProductItem> productsByMrpPrice = productItemRepository.findByMrpPriceBetween(priceFrom - 1, priceTo + 1);
-        List<ProductItem> productsByMinSellingPrice = productItemRepository.findBySellingPriceGreaterThanEqual(priceFrom - 1);
-        List<ProductItem> productsByMinMrpPrice = productItemRepository.findByMrpPriceGreaterThanEqual(priceFrom - 1);
-        List<ProductItem> productsByMaxSellingPrice = productItemRepository.findBySellingPriceLessThanEqual(priceTo + 1);
-        List<ProductItem> productsByMaxMrpPrice = productItemRepository.findByMrpPriceLessThanEqual(priceTo + 1);
+    public List<ProductItem> search(String keyword, double priceFrom, double priceTo, int page) {
+        Pageable pageable = PageRequest.of(page, 15);
+        List<ProductItem> productsByNameOrDescription = productItemRepository.findByProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword, pageable).getContent();
+        List<ProductItem> productsBySellingPrice = productItemRepository.findBySellingPriceBetween(priceFrom - 1, priceTo + 1, pageable).getContent();
+        List<ProductItem> productsByMrpPrice = productItemRepository.findByMrpPriceBetween(priceFrom - 1, priceTo + 1, pageable).getContent();
+        List<ProductItem> productsByMinSellingPrice = productItemRepository.findBySellingPriceGreaterThanEqual(priceFrom - 1, pageable).getContent();
+        List<ProductItem> productsByMinMrpPrice = productItemRepository.findByMrpPriceGreaterThanEqual(priceFrom - 1, pageable).getContent();
+        List<ProductItem> productsByMaxSellingPrice = productItemRepository.findBySellingPriceLessThanEqual(priceTo + 1, pageable).getContent();
+        List<ProductItem> productsByMaxMrpPrice = productItemRepository.findByMrpPriceLessThanEqual(priceTo + 1, pageable).getContent();
         List<ProductItem> filteredProducts = new ArrayList<>(productsByNameOrDescription);
 
         if (priceFrom == 0 && priceTo == 0) {
@@ -128,6 +130,10 @@ public class ProductService implements ProductDtoRepository {
         }
 
         return filteredProducts;
+    }
+
+    public List<ProductItem> findProductByIdsIn(String[] ids, int page) {
+        return productItemRepository.findAllByIdIn(ids, PageRequest.of(page, 15)).getContent();
     }
 
     private String getCategoryId(String name) {

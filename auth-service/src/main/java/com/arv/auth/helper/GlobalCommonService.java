@@ -1,9 +1,9 @@
 package com.arv.auth.helper;
 
 import com.arv.auth.model.document.User;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.repository.crud.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Service
 @SuppressWarnings("All")
-public class GlobalCommonService<T> {
+public class GlobalCommonService {
     public static SimpleDateFormat COMMON_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
     @Autowired
     private UserRepository userRepository;
@@ -124,5 +124,9 @@ public class GlobalCommonService<T> {
 
     public int getRandomInt(int size) {
         return new Random().nextInt(size);
+    }
+
+    public Object convertObject(Object object, Class<?> required) {
+        return new ObjectMapper().convertValue(object, required);
     }
 }
