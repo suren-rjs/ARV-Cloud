@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -17,10 +18,13 @@ public class Address {
     private String id;
     @NonNull
     @JsonIgnore
+    @Indexed
     private String userId;
     @NonNull
+    @Indexed
     private String name;
     @NonNull
+    @Indexed
     private String phone;
     @NonNull
     private String addressLine1;
@@ -28,6 +32,7 @@ public class Address {
     @NonNull
     private String area;
     @NonNull
+    @Indexed
     private String pinCode;
     @NonNull
     private String state;

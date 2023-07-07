@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductSubCategoryRepository extends MongoRepository<ProductSubCategory, String> {
-    Optional<ProductSubCategory> findOneById(String id);
+    <S extends ProductSubCategory> Optional<S> findOneById(String id);
 
     <S extends ProductSubCategory> List<S> findAllByCategoryId(String categoryId);
 
-    Optional<ProductSubCategory> findOneByCategoryIdAndName(String categoryId, String name);
+    Optional<ProductSubCategory> findOneSubSubCategoryByCategoryIdAndName(String categoryId, String name);
 
     Optional<ProductSubCategory> findOneByCategoryIdAndNameContainingIgnoreCase(String categoryId, String name);
 }

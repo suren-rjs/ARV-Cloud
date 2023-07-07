@@ -23,15 +23,21 @@ public class PublicController {
     private ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<?> getAllProducts(@RequestParam(required = false, defaultValue = "") String keyword,
+    public ResponseEntity<?> getAllProducts(@RequestParam(required = false, defaultValue = "") String categoryId,
+                                            @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(required = false, defaultValue = "0.0") Double priceFrom,
                                             @RequestParam(required = false, defaultValue = "0.0") Double priceTo,
                                             @RequestParam(required = false, defaultValue = "0") int page) {
-        return globalCommonService.getResponseOfObject(Optional.of(productService.search(keyword, priceFrom, priceTo, page)), HttpStatus.OK);
+        return globalCommonService.getResponseOfObject(Optional.of(productService.search(categoryId, keyword, priceFrom, priceTo, page)), HttpStatus.OK);
     }
 
     @PostMapping("/list")
     public ResponseEntity<?> getAllProductsByIds(@RequestBody Products products, @RequestParam(required = false, defaultValue = "0") int page) {
         return globalCommonService.getResponseOfObject(Optional.of(productService.findProductByIdsIn(products.getIds(), page)), HttpStatus.OK);
+    }
+
+    @GetMapping("/products/image/{productId}")
+    public ResponseEntity<?> getProductImages(@PathVariable("productId") String productId) {
+        return productService.downloadFile(productId);
     }
 }

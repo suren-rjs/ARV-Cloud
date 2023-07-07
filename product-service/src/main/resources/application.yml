@@ -3,6 +3,12 @@ spring:
 #    base-url: http://localhost:9411/
   application:
     name: ARV-PRODUCT-SERVICE
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2MB
+      max-file-size: 5MB
+      max-request-size: 10MB
 #logging:
 #  file: ~/logs/product-service.log
 
@@ -12,6 +18,20 @@ eureka:
     fetch-registry: true
     service-url:
       #      defaultZone: http://ec2-16-171-32-172.eu-north-1.compute.amazonaws.com:8761/eureka
-      defaultZone: http://192.168.2.5:8761/eureka
+      defaultZone: http://192.168.2.4:8761/eureka
   instance:
-    hostname: 192.168.2.5
+    hostname: localhost
+
+cloud:
+  aws:
+    credentials:
+      access-key: AKIAY5P7AGA4RA7CDGEP
+      secret-key: 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
+    region:
+      static: ap-south-1
+    stack:
+      auto: false
+
+application:
+  bucket:
+    name: arv-cloud-bucket

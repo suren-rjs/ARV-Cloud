@@ -1,10 +1,8 @@
 package com.arv.api.service.utils;
 
+import com.arv.api.helper.PictureDataMultipartFile;
 import com.arv.api.model.dto.request.product.ProductItemDTO;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +21,7 @@ public class MultipartFileToXLSXConverter {
         try (InputStream inputStream = multipartFile.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
             String outputFilePath = "uploaded-file.xlsx";
             try (Workbook outputWorkbook = new XSSFWorkbook()) {
+                List<?> images = workbook.getSheetAt(0).getWorkbook().getAllPictures();
                 for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                     Sheet inputSheet = workbook.getSheetAt(i);
                     Sheet outputSheet = outputWorkbook.createSheet(inputSheet.getSheetName());
@@ -31,7 +30,7 @@ public class MultipartFileToXLSXConverter {
 
                 try (OutputStream outputStream = Files.newOutputStream(Paths.get(outputFilePath))) {
                     outputWorkbook.write(outputStream);
-                    return getProductItemDTOList(Optional.of(outputWorkbook));
+                    return getProductItemDTOList(Optional.of(outputWorkbook), images);
                 }
             }
         }
@@ -61,40 +60,44 @@ public class MultipartFileToXLSXConverter {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private List<ProductItemDTO> getProductItemDTOList(Optional<Workbook> uploadedData) throws Exception {
+    private List<ProductItemDTO> getProductItemDTOList(Optional<Workbook> uploadedData, List<?> images) throws Exception {
         if (!uploadedData.isPresent()) {
             throw new Exception("Unable to upload");
         }
 
         Sheet sheet = uploadedData.get().getSheetAt(0);
         List<ProductItemDTO> productItemDTOList = new ArrayList<>();
+        int i = 0;
         for (Row row : sheet) {
             if (row.getCell(0) == null || row.getRowNum() == 0) continue;
-            String id = row.getCell(0).getStringCellValue();
-            String name = row.getCell(1).getStringCellValue();
-            String description = (String) getValueByIndex(row, 2, "-");
-            String category = row.getCell(3).getStringCellValue();
-            String subCategory = getValueByIndex(row, 4, null) == null ? category : row.getCell(4).getStringCellValue();
-            String subSubCategory = getValueByIndex(row, 5, null) == null ? subCategory : row.getCell(5).getStringCellValue();
-            Double mrpPrice = (Double) getValueByIndex(row, 6, (double) 0);
-            Double sellingPrice = (Double) getValueByIndex(row, 7, (double) 0);
-            Double discount = (Double) getValueByIndex(row, 8, (double) 0);
-            String productVariation = (String) getValueByIndex(row, 9, "-");
-            Integer stock = getIntegerValue(row, 10);
+            String name = row.getCell(0).getStringCellValue();
+            String description = (String) getValueByIndex(row, 1, "-");
+            String category = row.getCell(2).getStringCellValue();
+            String categoryTag = getValueByIndex(row, 3, null) == null ? category : row.getCell(4).getStringCellValue();
+            String subSubCategory = getValueByIndex(row, 4, null) == null ? category : row.getCell(5).getStringCellValue();
+            Double mrpPrice = (Double) getValueByIndex(row, 5, (double) 0);
+            Double sellingPrice = (Double) getValueByIndex(row, 6, (double) 0);
+            Double discount = (Double) getValueByIndex(row, 7, (double) 0);
+            String productVariation = (String) getValueByIndex(row, 8, "-");
+            Integer stock = getIntegerValue(row, 9);
+            String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll(" ", "-");
+            String tags = row.getCell(11).getStringCellValue().toLowerCase();
 
             ProductItemDTO itemDTO = new ProductItemDTO();
             itemDTO.setId(id);
             itemDTO.setProductName(name);
             itemDTO.setDescription(description);
             itemDTO.setCategoryId(category);
-            itemDTO.setSubCategoryId(subCategory);
+            itemDTO.setSubCategoryTags(categoryTag);
             itemDTO.setSubSubCategoryId(subSubCategory);
             itemDTO.setMrpPrice(mrpPrice);
             itemDTO.setSellingPrice(sellingPrice);
             itemDTO.setDiscount(discount);
             itemDTO.setProductVariation(productVariation);
             itemDTO.setStock(stock);
-
+            if (images.size() > i)
+                itemDTO.setImage(convertToMultipartFile((PictureData) images.get(i++)));
+            itemDTO.setTags(tags);
             productItemDTOList.add(itemDTO);
         }
         return productItemDTOList;
@@ -114,5 +117,10 @@ public class MultipartFileToXLSXConverter {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    public MultipartFile convertToMultipartFile(PictureData picture) {
+        String filename = "image." + picture.suggestFileExtension();
+        return new PictureDataMultipartFile(picture, filename);
     }
 }

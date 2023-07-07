@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -17,7 +18,9 @@ public class Cart {
     private String id;
     @NonNull
     @JsonIgnore
+    @Indexed
     private String userId;
     @NonNull
+    @Indexed
     private String productId;
 }

@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final String[] PUBLIC_END_POINTS = {"/auth-help", "/auth/**", "/v3/**", "/help/**", "/swagger-ui/**", "/notification/**", "/", "/public/**"};
+    private final String[] PUBLIC_END_POINTS = {"/auth-help", "/auth/**", "/v3/**", "/help/**", "/swagger-ui/**", "/notification/**", "/", "/actuator/info"};
     private final String[] CUSTOMER_END_POINTS = {"/cart", "/cart/**", "/wishlist", "/wishlist/**"};
     private final String[] MANAGER_END_POINTS = {"/products/**", "/productCategories", "/productSubCategories", "/productSubSubCategories", "/notification"};
     private final String[] ADMIN_END_POINTS = {"/admin/**",};

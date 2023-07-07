@@ -8,6 +8,6 @@ eureka:
     fetch-registry: true
     service-url:
 #      defaultZone: http://ec2-35-172-119-179.compute-1.amazonaws.com:8761/eureka
-      defaultZone: http://192.168.2.5:8761/eureka
+      defaultZone: http://localhost:8761/eureka
   instance:
-    hostname: 192.168.2.5
+    hostname: localhost

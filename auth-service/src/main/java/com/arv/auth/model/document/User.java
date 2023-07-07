@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -19,18 +20,23 @@ public class User {
     private String id;
     @NonNull
     @JsonIgnore
+    @Indexed
     private String username;
     @NonNull
+    @Indexed
     private String phone;
     @NonNull
     @JsonIgnore
     private String password;
+    @Indexed
     private String email;
     @NonNull
+    @Indexed
     private String profileName;
     private String profileImage;
     @NonNull
     @JsonIgnore
+    @Indexed
     private List<String> roles;
     @JsonIgnore
     private Boolean activeStatus;
