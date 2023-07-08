@@ -24,14 +24,14 @@ spring:
         - id: arv-product-manager-service
           uri: lb://ARV-PRODUCT-SERVICE
           predicates:
-            - Path=/products, /productCategories, /productSubCategories, /productSubSubCategories, /products/*, /productCategories/**, /productSubCategories/**, /productSubSubCategories/**
+            - Path=/products, /productCategories, /productSubCategories, /products/*, /productCategories/**, /productSubCategories/**,
           filters:
             - ManagerFilter
 
         - id: arv-product-service
           uri: lb://ARV-PRODUCT-SERVICE
           predicates:
-            - Path=/, /help, /public/**, /swagger-ui/**, /v3/**
+            - Path=/, /help, /public/**, /swagger-ui/**, /v3/**, /store, /store/**
           filters:
             - name: CircuitBreaker
               args:
@@ -57,7 +57,7 @@ eureka:
     fetch-registry: true
     service-url:
       #      defaultZone: http://ec2-16-171-32-172.eu-north-1.compute.amazonaws.com:8761/eureka
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://192.168.2.4:8761/eureka
   instance:
     hostname: localhost
 
