@@ -26,13 +26,12 @@ public class StorageService {
     @Autowired
     private AmazonS3 s3Client;
 
-    public String uploadFile(MultipartFile file, String id) {
+    public String uploadFile(MultipartFile file, String name) {
         File fileObj = convertMultiPartFileToFile(file);
-        String fileName = id + "_" + file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+        s3Client.putObject(new PutObjectRequest(bucketName, name, fileObj));
         //noinspection ResultOfMethodCallIgnored
         fileObj.delete();
-        return fileName;
+        return name;
     }
 
 

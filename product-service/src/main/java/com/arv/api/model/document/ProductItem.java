@@ -28,7 +28,7 @@ public class ProductItem {
     private String categoryId;
     @Indexed
     @JsonIgnore
-    private String subSubCategoryId;
+    private String subCategoryId;
     @DBRef
     private ProductCategory productCategory;
     @Indexed

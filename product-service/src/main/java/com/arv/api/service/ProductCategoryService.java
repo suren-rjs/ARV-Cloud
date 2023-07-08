@@ -61,11 +61,22 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
     }
 
     @Override
+    public Optional<ProductCategory> findOneCategoryByNameOrId(String name) {
+        return productCategoryRepository.findOneByNameOrId(name, name);
+    }
+
+    @Override
     public Optional<ProductCategory> getOneCategoryByName(String name) {
         return productCategoryRepository.findOneByName(name);
     }
 
+    @Override
     public Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndName(String categoryId, String name) {
         return productSubCategoryRepository.findOneSubSubCategoryByCategoryIdAndName(categoryId, name);
+    }
+
+    @Override
+    public Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndId(String categoryId, String id) {
+        return productSubCategoryRepository.findOneSubSubCategoryByCategoryIdAndId(categoryId, id);
     }
 }

@@ -24,7 +24,9 @@ public interface ProductCategoryDtoRepository {
     <S extends ProductSubCategory> ProductSubCategory updateSubSubCategory(ProductSubCategory productSubCategory);
 
     <S extends ProductCategory> Optional<ProductCategory> getOneCategoryByName(String name);
+    <S extends ProductCategory> Optional<ProductCategory> findOneCategoryByNameOrId(String name);
 
 
     <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndName(String categoryId, String name);
+    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndId(String categoryId, String name);
 }

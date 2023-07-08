@@ -87,9 +87,9 @@ public class MultipartFileToXLSXConverter {
             itemDTO.setId(id);
             itemDTO.setProductName(name);
             itemDTO.setDescription(description);
-            itemDTO.setCategoryId(category);
+            itemDTO.setCategoryNameOrId(category);
             itemDTO.setSubCategoryTags(categoryTag);
-            itemDTO.setSubSubCategoryId(subSubCategory);
+            itemDTO.setSubCategoryNameOrId(subSubCategory);
             itemDTO.setMrpPrice(mrpPrice);
             itemDTO.setSellingPrice(sellingPrice);
             itemDTO.setDiscount(discount);

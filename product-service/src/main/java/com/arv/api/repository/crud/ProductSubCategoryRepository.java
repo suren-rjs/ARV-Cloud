@@ -12,6 +12,7 @@ public interface ProductSubCategoryRepository extends MongoRepository<ProductSub
     <S extends ProductSubCategory> List<S> findAllByCategoryId(String categoryId);
 
     Optional<ProductSubCategory> findOneSubSubCategoryByCategoryIdAndName(String categoryId, String name);
+    Optional<ProductSubCategory> findOneSubSubCategoryByCategoryIdAndId(String categoryId, String id);
 
     Optional<ProductSubCategory> findOneByCategoryIdAndNameContainingIgnoreCase(String categoryId, String name);
 }

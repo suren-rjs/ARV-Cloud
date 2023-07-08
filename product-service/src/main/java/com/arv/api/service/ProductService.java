@@ -51,20 +51,19 @@ public class ProductService implements ProductDtoRepository {
     public <S extends ProductItem> void save(ProductItemDTO productItemDto) {
         ProductItem productItem = modelMapper.map(productItemDto, ProductItem.class);
 
-        String categoryName = productItemDto.getCategoryId();
-        String subCategoryName = productItemDto.getSubCategoryTags() == null ? categoryName : productItemDto.getSubCategoryTags();
-        String subSubCategoryName = productItemDto.getSubSubCategoryId() == null ? subCategoryName : productItemDto.getSubSubCategoryId();
+        String categoryNameOrId = productItemDto.getCategoryNameOrId();
+        String subCategoryNameOrId = productItemDto.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDto.getSubCategoryNameOrId();
 
-        ProductCategory productCategory = getCategoryId(categoryName);
-        String productSubCategory = productItem.getSubCategoryTags();
-        ProductSubCategory productSubSubCategory = getSubSubCategoryId(productCategory.getId(), subSubCategoryName);
+        ProductCategory productCategory = getCategoryId(categoryNameOrId);
+        ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+        String subCategoryTags = productItem.getSubCategoryTags();
 
         productItem.setCategoryId(productCategory.getId());
-        productItem.setSubCategoryTags(productSubCategory);
-        productItem.setSubSubCategoryId(productSubSubCategory.getId());
+        productItem.setSubCategoryId(productSubCategory.getId());
+        productItem.setSubCategoryTags(subCategoryTags);
 
         productItem.setProductCategory(productCategory);
-        productItem.setProductSubCategory(productSubSubCategory);
+        productItem.setProductSubCategory(productSubCategory);
 
         productItem.setImage(uploadFile(productItemDto.getImage(), productItemDto.getProductName().toLowerCase().replaceAll(" ", "-")));
         productItem.setTags(productItemDto.getTags());
@@ -87,6 +86,23 @@ public class ProductService implements ProductDtoRepository {
             ProductItem productItem = getById(updatedDetails.getId());
             if (productItem == null) throw new Exception("Product not found");
             productItem = modelMapper.map(updatedDetails, ProductItem.class);
+
+            String categoryNameOrId = updatedDetails.getCategoryNameOrId();
+            String subCategoryNameOrId = updatedDetails.getSubCategoryNameOrId() == null ? categoryNameOrId : updatedDetails.getSubCategoryNameOrId();
+
+            ProductCategory productCategory = getCategoryId(categoryNameOrId);
+            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+
+            productItem.setCategoryId(productCategory.getId());
+            productItem.setSubCategoryId(productSubCategory.getId());
+
+            productItem.setProductCategory(productCategory);
+            productItem.setProductSubCategory(productSubCategory);
+
+            if (updatedDetails.getImage() != null) {
+                productItem.setImage(uploadFile(updatedDetails.getImage(), updatedDetails.getProductName().toLowerCase().replaceAll(" ", "-")));
+            }
+
             productItemRepository.save(productItem);
         } catch (Exception e) {
             throw new Exception("Unable to update");
@@ -110,16 +126,16 @@ public class ProductService implements ProductDtoRepository {
     @Override
     public void saveAll(List<ProductItemDTO> productItemDTOList) {
         for (ProductItemDTO productItemDTO : productItemDTOList) {
-            String categoryName = productItemDTO.getCategoryId();
-            String subCategoryName = productItemDTO.getSubCategoryTags();
-            String subSubCategoryName = productItemDTO.getSubSubCategoryId();
+            String categoryNameOrId = productItemDTO.getCategoryNameOrId();
+            String subCategoryNameOrId = productItemDTO.getSubCategoryNameOrId();
+            String subCategoryTags = productItemDTO.getSubCategoryTags();
 
-            ProductCategory productCategory = getCategoryId(categoryName);
-            ProductSubCategory productSubCategory = getSubSubCategoryId(productCategory.getId(), subSubCategoryName);
+            ProductCategory productCategory = getCategoryId(categoryNameOrId);
+            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
 
-            productItemDTO.setCategoryId(productCategory.getId());
-            productItemDTO.setCategoryId(productItemDTO.getSubCategoryTags());
-            productItemDTO.setSubSubCategoryId(productSubCategory.getId());
+            productItemDTO.setCategoryNameOrId(productCategory.getId());
+            productItemDTO.setSubCategoryTags(productItemDTO.getSubCategoryTags());
+            productItemDTO.setSubCategoryNameOrId(productSubCategory.getId());
 
             productItemDTO.setProductCategory(productCategory);
             productItemDTO.setProductSubCategory(productSubCategory);
@@ -188,24 +204,27 @@ public class ProductService implements ProductDtoRepository {
         return totalPage;
     }
 
-    private ProductCategory getCategoryId(String name) {
-        Optional<ProductCategory> productCategory = productCategoryService.getOneCategoryByName(name);
+    private ProductCategory getCategoryId(String nameOrId) {
+        Optional<ProductCategory> productCategory = productCategoryService.findOneCategoryByNameOrId(nameOrId);
 
         if (productCategory.isPresent()) return productCategory.get();
 
         ProductCategory newProductCategory = new ProductCategory();
-        newProductCategory.setName(name);
+        newProductCategory.setName(nameOrId);
         newProductCategory = productCategoryService.saveCategory(newProductCategory);
         return newProductCategory;
     }
 
-    private ProductSubCategory getSubSubCategoryId(String categoryId, String name) {
-        Optional<ProductSubCategory> productSubSubCategory = productCategoryService.getOneSubSubCategoryByCategoryIdAndName(categoryId, name);
+    private ProductSubCategory getSubCategoryId(String categoryId, String nameOrId) {
+        Optional<ProductSubCategory> productSubSubCategory = productCategoryService.getOneSubSubCategoryByCategoryIdAndName(categoryId, nameOrId);
+        if (!productSubSubCategory.isPresent()) {
+            productSubSubCategory = productCategoryService.getOneSubSubCategoryByCategoryIdAndId(categoryId, nameOrId);
+        }
 
         if (productSubSubCategory.isPresent()) return productSubSubCategory.get();
 
         ProductSubCategory subSubCategory = new ProductSubCategory();
-        subSubCategory.setName(name);
+        subSubCategory.setName(nameOrId);
         subSubCategory.setCategoryId(categoryId);
         return productCategoryService.saveSubSubCategory(subSubCategory);
     }

@@ -18,9 +18,9 @@ public class ProductItemDTO {
     private String productName;
     private String description;
     @NotNull
-    private String categoryId;
+    private String categoryNameOrId;
+    private String subCategoryNameOrId;
     private String subCategoryTags;
-    private String subSubCategoryId;
     @DBRef
     @JsonIgnore
     private ProductCategory productCategory;
