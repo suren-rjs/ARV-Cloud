@@ -13,6 +13,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @ToString
 public class ProductItemDTO {
+    @NotNull
+    private String storeId;
     private String id;
     @NotNull
     private String productName;

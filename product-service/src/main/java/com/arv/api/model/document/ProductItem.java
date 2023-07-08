@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -20,6 +21,9 @@ public class ProductItem {
     @Id
     private String id;
     @NotNull
+    private String storeId;
+    @NotNull
+    @UniqueElements
     private String productName;
     private String description;
     @NotNull

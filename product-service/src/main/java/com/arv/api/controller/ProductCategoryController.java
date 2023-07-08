@@ -99,7 +99,7 @@ public class ProductCategoryController {
 
     @GetMapping("/productSubCategories/{id}")
     public ResponseEntity<?> getSubCategoriesById(@PathVariable String id) {
-        String message = "Invalid sub-sub category id";
+        String message = "Invalid sub category id";
         HttpStatus status = HttpStatus.NOT_FOUND;
         ProductSubCategory productSubCategory = productCategoryService.getOneSubCategoriesById(id).orElse(null);
         if (productSubCategory == null) {
@@ -110,7 +110,7 @@ public class ProductCategoryController {
 
     @PostMapping("/productSubCategories")
     public ResponseEntity<?> saveSubCategories(@RequestBody ProductSubCategory productSubCategory) {
-        String message = "new sub-sub category created";
+        String message = "new sub category created";
         HttpStatus status = HttpStatus.OK;
         productCategoryService.saveSubCategories(productSubCategory);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
@@ -118,7 +118,7 @@ public class ProductCategoryController {
 
     @PutMapping("/productSubCategories")
     public ResponseEntity<?> updateSubCategoriesById(@RequestBody ProductSubCategory productSubCategory) {
-        String message = "Invalid sub-sub category id";
+        String message = "Invalid sub category id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
         if (productSubCategory.getId() == null) {
             return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
@@ -131,12 +131,12 @@ public class ProductCategoryController {
 
     @DeleteMapping("/productSubCategories/{id}")
     public ResponseEntity<?> deleteSubCategoriesById(@PathVariable("id") String id) {
-        String message = "Invalid sub-sub category id";
+        String message = "Invalid sub category id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
         if (!productSubCategoryRepository.findOneById(id).isPresent()) {
             return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
         }
-        message = "Sub-sub Category deleted";
+        message = "Sub Category deleted";
         status = HttpStatus.OK;
         productCategoryService.deleteSubCategoriesById(id);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);

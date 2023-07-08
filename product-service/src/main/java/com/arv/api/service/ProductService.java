@@ -1,5 +1,6 @@
 package com.arv.api.service;
 
+import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.document.ProductSubCategory;
@@ -45,6 +46,9 @@ public class ProductService implements ProductDtoRepository {
     private ProductCategoryRepository productCategoryRepository;
 
     @Autowired
+    private GlobalCommonService globalCommonService;
+
+    @Autowired
     private StorageService service;
 
     @Override
@@ -67,6 +71,7 @@ public class ProductService implements ProductDtoRepository {
 
         productItem.setImage(uploadFile(productItemDto.getImage(), productItemDto.getProductName().toLowerCase().replaceAll(" ", "-")));
         productItem.setTags(productItemDto.getTags());
+        productItem.setId(productItemDto.getStoreId() + productItemDto.getProductName().toLowerCase().replaceAll(" ", "-"));
 
         productItemRepository.save(productItem);
     }
@@ -167,7 +172,7 @@ public class ProductService implements ProductDtoRepository {
         // Get the content of the pages as filtered products
         List<ProductItem> filteredProducts = new ArrayList<>(productsByNameOrDescription.getContent());
 
-        ProductList productList = new ProductList(filteredProducts, page, productsByNameOrDescription.getTotalElements(), getTotalPage(productsByNameOrDescription));
+        ProductList productList = new ProductList(filteredProducts, page, productsByNameOrDescription.getTotalElements(), globalCommonService.getTotalPage(productsByNameOrDescription.getTotalPages()));
 
         if (priceFrom == 0 && priceTo == 0) {
             return productList;
@@ -195,13 +200,7 @@ public class ProductService implements ProductDtoRepository {
         // Get the content of the pages as filtered products
         List<ProductItem> filteredProducts = new ArrayList<>(products.getContent());
 
-        return new ProductList(filteredProducts, page, products.getTotalElements(), getTotalPage(products));
-    }
-
-    private static int getTotalPage(Page<ProductItem> products) {
-        int totalPage = products.getTotalPages();
-        totalPage = totalPage <= 1 ? 0 : (totalPage - 1);
-        return totalPage;
+        return new ProductList(filteredProducts, page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
     }
 
     private ProductCategory getCategoryId(String nameOrId) {

@@ -1,6 +1,7 @@
 package com.arv.api.controller;
 
 import com.arv.api.helper.GlobalCommonService;
+import com.arv.api.model.dto.request.product.BulkUpload;
 import com.arv.api.model.dto.request.product.ProductItemDTO;
 import com.arv.api.service.ProductService;
 import com.arv.api.service.utils.MultipartFileToXLSXConverter;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,16 +29,15 @@ public class ProductController {
     private MultipartFileToXLSXConverter multipartFileToXLSXConverter;
 
     @PostMapping
-    public ResponseEntity<?> newProduct(@RequestBody ProductItemDTO productItemDto) {
+    public ResponseEntity<?> addProduct(@RequestBody ProductItemDTO productItemDto) {
         productService.save(productItemDto);
         return globalCommonService.getResponseEntityByMessageAndStatus("New product added", HttpStatus.CREATED);
     }
 
     @PostMapping("/bulkUpload")
-    public ResponseEntity<?> bulkUpload(@RequestBody MultipartFile multipartFile) {
+    public ResponseEntity<?> bulkUpload(@RequestBody BulkUpload bulkUpload) {
         try {
-            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(multipartFile);
-
+            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(bulkUpload.getXmlFile(), bulkUpload.getStoreId());
             try {
                 productService.saveAll(productItemDTOList);
             } catch (Exception e) {

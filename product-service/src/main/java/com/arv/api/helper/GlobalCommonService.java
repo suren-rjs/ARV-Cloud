@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @SuppressWarnings("All")
-public class GlobalCommonService<T> {
+public class GlobalCommonService {
     public static SimpleDateFormat COMMON_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
     @Lazy
     @Autowired
@@ -112,5 +112,11 @@ public class GlobalCommonService<T> {
 
     public int getRandomInt(int size) {
         return new Random().nextInt(size);
+    }
+
+
+    public int getTotalPage(int totalPage) {
+        totalPage = totalPage <= 1 ? 0 : (totalPage - 1);
+        return totalPage;
     }
 }
