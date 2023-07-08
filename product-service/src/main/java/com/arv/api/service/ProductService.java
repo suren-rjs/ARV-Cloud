@@ -216,17 +216,17 @@ public class ProductService implements ProductDtoRepository {
     }
 
     private ProductSubCategory getSubCategoryId(String categoryId, String nameOrId) {
-        Optional<ProductSubCategory> productSubSubCategory = productCategoryService.getOneSubSubCategoryByCategoryIdAndName(categoryId, nameOrId);
-        if (!productSubSubCategory.isPresent()) {
-            productSubSubCategory = productCategoryService.getOneSubSubCategoryByCategoryIdAndId(categoryId, nameOrId);
+        Optional<ProductSubCategory> productSubCategories = productCategoryService.getOneSubCategoriesByCategoryIdAndName(categoryId, nameOrId);
+        if (!productSubCategories.isPresent()) {
+            productSubCategories = productCategoryService.getOneSubCategoriesByCategoryIdAndId(categoryId, nameOrId);
         }
 
-        if (productSubSubCategory.isPresent()) return productSubSubCategory.get();
+        if (productSubCategories.isPresent()) return productSubCategories.get();
 
-        ProductSubCategory subSubCategory = new ProductSubCategory();
-        subSubCategory.setName(nameOrId);
-        subSubCategory.setCategoryId(categoryId);
-        return productCategoryService.saveSubSubCategory(subSubCategory);
+        ProductSubCategory subCategory = new ProductSubCategory();
+        subCategory.setName(nameOrId);
+        subCategory.setCategoryId(categoryId);
+        return productCategoryService.saveSubCategories(subCategory);
     }
 
     private String uploadFile(MultipartFile file, String id) {

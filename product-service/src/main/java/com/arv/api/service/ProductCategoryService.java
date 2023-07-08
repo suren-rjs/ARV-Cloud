@@ -41,22 +41,22 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
     }
 
     @Override
-    public <S extends ProductSubCategory> ProductSubCategory saveSubSubCategory(ProductSubCategory productSubCategory) {
+    public <S extends ProductSubCategory> ProductSubCategory saveSubCategories(ProductSubCategory productSubCategory) {
         return productSubCategoryRepository.save(productSubCategory);
     }
 
     @Override
-    public void deleteSubSubCategoryById(String id) {
+    public void deleteSubCategoriesById(String id) {
         productSubCategoryRepository.deleteById(id);
     }
 
     @Override
-    public <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubSubCategoryById(String id) {
+    public <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubCategoriesById(String id) {
         return productSubCategoryRepository.findOneById(id);
     }
 
     @Override
-    public <S extends ProductSubCategory> ProductSubCategory updateSubSubCategory(ProductSubCategory productSubCategory) {
+    public <S extends ProductSubCategory> ProductSubCategory updateSubCategories(ProductSubCategory productSubCategory) {
         return productSubCategoryRepository.save(productSubCategory);
     }
 
@@ -71,12 +71,12 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
     }
 
     @Override
-    public Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndName(String categoryId, String name) {
-        return productSubCategoryRepository.findOneSubSubCategoryByCategoryIdAndName(categoryId, name);
+    public Optional<ProductSubCategory> getOneSubCategoriesByCategoryIdAndName(String categoryId, String name) {
+        return productSubCategoryRepository.findOneSubCategoriesByCategoryIdAndName(categoryId, name);
     }
 
     @Override
-    public Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndId(String categoryId, String id) {
-        return productSubCategoryRepository.findOneSubSubCategoryByCategoryIdAndId(categoryId, id);
+    public Optional<ProductSubCategory> getOneSubCategoriesByCategoryIdAndId(String categoryId, String id) {
+        return productSubCategoryRepository.findOneSubCategoriesByCategoryIdAndId(categoryId, id);
     }
 }

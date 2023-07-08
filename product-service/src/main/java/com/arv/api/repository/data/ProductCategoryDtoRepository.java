@@ -15,18 +15,18 @@ public interface ProductCategoryDtoRepository {
 
     <S extends ProductCategory> ProductCategory updateCategory(ProductCategory productCategory);
 
-    <S extends ProductSubCategory> ProductSubCategory saveSubSubCategory(ProductSubCategory productSubCategory);
+    <S extends ProductSubCategory> ProductSubCategory saveSubCategories(ProductSubCategory productSubCategory);
 
-    void deleteSubSubCategoryById(String id);
+    void deleteSubCategoriesById(String id);
 
-    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubSubCategoryById(String id);
+    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubCategoriesById(String id);
 
-    <S extends ProductSubCategory> ProductSubCategory updateSubSubCategory(ProductSubCategory productSubCategory);
+    <S extends ProductSubCategory> ProductSubCategory updateSubCategories(ProductSubCategory productSubCategory);
 
     <S extends ProductCategory> Optional<ProductCategory> getOneCategoryByName(String name);
     <S extends ProductCategory> Optional<ProductCategory> findOneCategoryByNameOrId(String name);
 
 
-    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndName(String categoryId, String name);
-    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubSubCategoryByCategoryIdAndId(String categoryId, String name);
+    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubCategoriesByCategoryIdAndName(String categoryId, String name);
+    <S extends ProductSubCategory> Optional<ProductSubCategory> getOneSubCategoriesByCategoryIdAndId(String categoryId, String name);
 }

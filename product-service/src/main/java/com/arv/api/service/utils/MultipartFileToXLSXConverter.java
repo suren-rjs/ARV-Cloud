@@ -74,7 +74,7 @@ public class MultipartFileToXLSXConverter {
             String description = (String) getValueByIndex(row, 1, "-");
             String category = row.getCell(2).getStringCellValue();
             String categoryTag = getValueByIndex(row, 3, null) == null ? category : row.getCell(4).getStringCellValue();
-            String subSubCategory = getValueByIndex(row, 4, null) == null ? category : row.getCell(5).getStringCellValue();
+            String subCategory = getValueByIndex(row, 4, null) == null ? category : row.getCell(5).getStringCellValue();
             Double mrpPrice = (Double) getValueByIndex(row, 5, (double) 0);
             Double sellingPrice = (Double) getValueByIndex(row, 6, (double) 0);
             Double discount = (Double) getValueByIndex(row, 7, (double) 0);
@@ -89,7 +89,7 @@ public class MultipartFileToXLSXConverter {
             itemDTO.setDescription(description);
             itemDTO.setCategoryNameOrId(category);
             itemDTO.setSubCategoryTags(categoryTag);
-            itemDTO.setSubCategoryNameOrId(subSubCategory);
+            itemDTO.setSubCategoryNameOrId(subCategory);
             itemDTO.setMrpPrice(mrpPrice);
             itemDTO.setSellingPrice(sellingPrice);
             itemDTO.setDiscount(discount);

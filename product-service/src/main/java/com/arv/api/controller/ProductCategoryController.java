@@ -89,7 +89,7 @@ public class ProductCategoryController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @GetMapping("/productSubSubCategories")
+    @GetMapping("/productSubCategories")
     public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam(required = false, defaultValue = "") String keyword) {
         if (keyword.replaceAll(" ", "").isEmpty()) {
             globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findAllByCategoryId(categoryId)), HttpStatus.OK);
@@ -97,27 +97,27 @@ public class ProductCategoryController {
         return globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findOneByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword)), HttpStatus.OK);
     }
 
-    @GetMapping("/productSubSubCategories/{id}")
-    public ResponseEntity<?> getSubSubCategoryById(@PathVariable String id) {
+    @GetMapping("/productSubCategories/{id}")
+    public ResponseEntity<?> getSubCategoriesById(@PathVariable String id) {
         String message = "Invalid sub-sub category id";
         HttpStatus status = HttpStatus.NOT_FOUND;
-        ProductSubCategory productSubCategory = productCategoryService.getOneSubSubCategoryById(id).orElse(null);
+        ProductSubCategory productSubCategory = productCategoryService.getOneSubCategoriesById(id).orElse(null);
         if (productSubCategory == null) {
             return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
         }
         return globalCommonService.getResponseOfObject(Optional.of(productSubCategory), HttpStatus.OK);
     }
 
-    @PostMapping("/productSubSubCategories")
-    public ResponseEntity<?> saveSubSubCategory(@RequestBody ProductSubCategory productSubCategory) {
+    @PostMapping("/productSubCategories")
+    public ResponseEntity<?> saveSubCategories(@RequestBody ProductSubCategory productSubCategory) {
         String message = "new sub-sub category created";
         HttpStatus status = HttpStatus.OK;
-        productCategoryService.saveSubSubCategory(productSubCategory);
+        productCategoryService.saveSubCategories(productSubCategory);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PutMapping("/productSubSubCategories")
-    public ResponseEntity<?> updateSubSubCategoryById(@RequestBody ProductSubCategory productSubCategory) {
+    @PutMapping("/productSubCategories")
+    public ResponseEntity<?> updateSubCategoriesById(@RequestBody ProductSubCategory productSubCategory) {
         String message = "Invalid sub-sub category id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
         if (productSubCategory.getId() == null) {
@@ -125,12 +125,12 @@ public class ProductCategoryController {
         }
         message = "Category updated";
         status = HttpStatus.OK;
-        productCategoryService.saveSubSubCategory(productSubCategory);
+        productCategoryService.saveSubCategories(productSubCategory);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @DeleteMapping("/productSubSubCategories/{id}")
-    public ResponseEntity<?> deleteSubSubCategoryById(@PathVariable("id") String id) {
+    @DeleteMapping("/productSubCategories/{id}")
+    public ResponseEntity<?> deleteSubCategoriesById(@PathVariable("id") String id) {
         String message = "Invalid sub-sub category id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
         if (!productSubCategoryRepository.findOneById(id).isPresent()) {
@@ -138,7 +138,7 @@ public class ProductCategoryController {
         }
         message = "Sub-sub Category deleted";
         status = HttpStatus.OK;
-        productCategoryService.deleteSubSubCategoryById(id);
+        productCategoryService.deleteSubCategoriesById(id);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 }
