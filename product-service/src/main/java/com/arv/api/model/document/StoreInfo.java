@@ -25,5 +25,6 @@ public class StoreInfo {
     private String latitude;
     @NotNull
     private String longitude;
+    private String locationLink;
     private String tags;
 }
