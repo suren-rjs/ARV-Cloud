@@ -1,18 +1,19 @@
 package com.arv.api.repository.crud;
 
 import com.arv.api.model.document.ProductSubCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ProductSubCategoryRepository extends MongoRepository<ProductSubCategory, String> {
     <S extends ProductSubCategory> Optional<S> findOneById(String id);
 
-    <S extends ProductSubCategory> List<S> findAllByCategoryId(String categoryId);
+    Page<ProductSubCategory> findAllByCategoryId(String categoryId, Pageable pageable);
 
-    Optional<ProductSubCategory> findOneSubCategoriesByCategoryIdAndName(String categoryId, String name);
-    Optional<ProductSubCategory> findOneSubCategoriesByCategoryIdAndId(String categoryId, String id);
+    Optional<ProductSubCategory> findOneByCategoryIdAndName(String categoryId, String name);
+    Optional<ProductSubCategory> findOneByCategoryIdAndId(String categoryId, String id);
 
-    Optional<ProductSubCategory> findOneByCategoryIdAndNameContainingIgnoreCase(String categoryId, String name);
+    Page<ProductSubCategory> findAllByCategoryIdAndNameContainingIgnoreCase(String categoryId, String name, Pageable pageable);
 }

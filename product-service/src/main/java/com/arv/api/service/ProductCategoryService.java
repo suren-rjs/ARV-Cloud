@@ -71,12 +71,12 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
     }
 
     @Override
-    public Optional<ProductSubCategory> getOneSubCategoriesByCategoryIdAndName(String categoryId, String name) {
-        return productSubCategoryRepository.findOneSubCategoriesByCategoryIdAndName(categoryId, name);
+    public Optional<ProductSubCategory> getOneByCategoryIdAndName(String categoryId, String name) {
+        return productSubCategoryRepository.findOneByCategoryIdAndName(categoryId, name);
     }
 
     @Override
-    public Optional<ProductSubCategory> getOneSubCategoriesByCategoryIdAndId(String categoryId, String id) {
-        return productSubCategoryRepository.findOneSubCategoriesByCategoryIdAndId(categoryId, id);
+    public Optional<ProductSubCategory> getOneByCategoryIdAndId(String categoryId, String id) {
+        return productSubCategoryRepository.findOneByCategoryIdAndId(categoryId, id);
     }
 }

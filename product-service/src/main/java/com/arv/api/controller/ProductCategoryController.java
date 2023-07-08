@@ -3,6 +3,8 @@ package com.arv.api.controller;
 import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductSubCategory;
+import com.arv.api.model.dto.response.CategoryList;
+import com.arv.api.model.dto.response.SubCategoryList;
 import com.arv.api.repository.crud.ProductCategoryRepository;
 import com.arv.api.repository.crud.ProductSubCategoryRepository;
 import com.arv.api.service.ProductCategoryService;
@@ -36,12 +38,12 @@ public class ProductCategoryController {
     public ResponseEntity<?> getCategories(@RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, 15);
         Page<ProductCategory> page;
-        if (keyword.replaceAll(" ", "").isEmpty()) {
+        if (keyword.replaceAll(" ", "").isEmpty())
             page = productCategoryRepository.findAll(pageable);
-            return globalCommonService.getResponseOfObject(Optional.of(page.getContent()), HttpStatus.OK);
-        }
-        page = productCategoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        return globalCommonService.getResponseOfObject(Optional.of(page.getContent()), HttpStatus.OK);
+        else
+            page = productCategoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        CategoryList categoryList = new CategoryList(page.getContent(), pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
+        return globalCommonService.getResponseOfObject(Optional.of(categoryList), HttpStatus.OK);
     }
 
     @GetMapping("/productCategories/{id}")
@@ -90,11 +92,16 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubCategories")
-    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam(required = false, defaultValue = "") String keyword) {
-        if (keyword.replaceAll(" ", "").isEmpty()) {
-            globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findAllByCategoryId(categoryId)), HttpStatus.OK);
-        }
-        return globalCommonService.getResponseOfObject(Optional.of(productSubCategoryRepository.findOneByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword)), HttpStatus.OK);
+    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 15);
+        Page<ProductSubCategory> page;
+        if (keyword.replaceAll(" ", "").isEmpty())
+            page = productSubCategoryRepository.findAllByCategoryId(categoryId, pageable);
+        else
+            page = productSubCategoryRepository.findAllByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword, pageable);
+
+        SubCategoryList subCategoryList = new SubCategoryList(page.getContent(), pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
+        return globalCommonService.getResponseOfObject(Optional.of(subCategoryList), HttpStatus.OK);
     }
 
     @GetMapping("/productSubCategories/{id}")

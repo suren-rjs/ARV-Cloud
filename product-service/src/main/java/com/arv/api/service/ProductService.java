@@ -215,9 +215,9 @@ public class ProductService implements ProductDtoRepository {
     }
 
     private ProductSubCategory getSubCategoryId(String categoryId, String nameOrId) {
-        Optional<ProductSubCategory> productSubCategories = productCategoryService.getOneSubCategoriesByCategoryIdAndName(categoryId, nameOrId);
+        Optional<ProductSubCategory> productSubCategories = productCategoryService.getOneByCategoryIdAndName(categoryId, nameOrId);
         if (!productSubCategories.isPresent()) {
-            productSubCategories = productCategoryService.getOneSubCategoriesByCategoryIdAndId(categoryId, nameOrId);
+            productSubCategories = productCategoryService.getOneByCategoryIdAndId(categoryId, nameOrId);
         }
 
         if (productSubCategories.isPresent()) return productSubCategories.get();
