@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +37,11 @@ public class ProductController {
     }
 
     @PostMapping("/bulkUpload")
-    public ResponseEntity<?> bulkUpload(@RequestBody BulkUpload bulkUpload) {
+    public ResponseEntity<?> bulkUpload(MultipartHttpServletRequest request) {
         try {
-            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(bulkUpload.getXmlFile(), bulkUpload.getStoreId());
+            String storeId = request.getParameter("storeId");
+            MultipartFile xmlFile = request.getFile("xmlFile");
+            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId);
             try {
                 productService.saveAll(productItemDTOList);
             } catch (Exception e) {
