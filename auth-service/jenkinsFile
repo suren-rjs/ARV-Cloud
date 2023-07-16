@@ -33,7 +33,7 @@ pipeline {
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "surenrjs/auth-service:${BUILD_NUMBER}"
-        DOCKERFILE_LOCATION = "auth-service/DockerFile"
+        // DOCKERFILE_LOCATION = "auth-service/DockerFile"
         REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
       steps {
