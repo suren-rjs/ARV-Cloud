@@ -9,7 +9,7 @@ pipeline {
     stage('Checkout') {
       steps {
         sh 'echo passed'
-        git branch: 'master', url: 'https://github.com/suren-rjs/ARV-Cloud.git'
+        // git branch: 'master', url: 'https://github.com/suren-rjs/ARV-Cloud.git'
       }
     }
     stage('Build and Test') {
