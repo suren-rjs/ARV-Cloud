@@ -39,4 +39,5 @@ public class Address {
     @NonNull
     private String nation;
     private String landMark;
+    private Boolean isDeliveryAddress = false;
 }
