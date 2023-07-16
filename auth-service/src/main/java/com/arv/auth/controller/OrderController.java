@@ -1,0 +1,169 @@
+package com.arv.auth.controller;
+
+import com.arv.auth.helper.GlobalCommonService;
+import com.arv.auth.model.dto.request.order.OrderDTO;
+import com.arv.auth.model.enums.PaymentMode;
+import com.arv.auth.model.enums.ReturnStatus;
+import com.arv.auth.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@SuppressWarnings("unused")
+@RestController
+@RequestMapping(value = "/orders", produces = MediaType.APPLICATION_JSON_VALUE)
+public class OrderController {
+    @Autowired
+    protected GlobalCommonService globalCommonService;
+    @Autowired
+    protected OrderService orderService;
+
+    @GetMapping
+    private ResponseEntity<?> getOrder(@RequestParam(required = false, defaultValue = "0") int page) {
+        try {
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findAllByUserId(page)), HttpStatus.OK);
+        } catch (Exception e) {
+            return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/{id}")
+    private ResponseEntity<?> getOrder(@PathVariable String id) {
+        try {
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findOneById(id)), HttpStatus.OK);
+        } catch (Exception e) {
+            return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping
+    private ResponseEntity<?> newOrder(@RequestBody OrderDTO orderDTO) {
+        HttpStatus status;
+        String message = "Order placement success!";
+        try {
+            status = HttpStatus.OK;
+            orderService.newOrder(orderDTO);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to place your order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> placeOrder(@PathVariable String id) {
+        HttpStatus status;
+        String message = "Order placement success!";
+        try {
+            status = HttpStatus.OK;
+            orderService.placeOrder(id);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to place your order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> cancelOrder(@PathVariable String id) {
+        HttpStatus status;
+        String message = "Cancellation in progress!";
+        try {
+            status = HttpStatus.OK;
+            orderService.cancelOrder(id);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to cancel your order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> outForDelivery(@PathVariable String id) {
+        HttpStatus status;
+        String message = "Order status updated!";
+        try {
+            status = HttpStatus.OK;
+            orderService.outForDelivery(id);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to process order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> completeDelivery(@PathVariable String id) {
+        HttpStatus status;
+        String message = "Order status updated!";
+        try {
+            status = HttpStatus.OK;
+            orderService.completeDelivery(id);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to process order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> updateDeliveryAddress(@PathVariable String id, @RequestParam String addressId) {
+        HttpStatus status;
+        String message = "Order address updated!";
+        try {
+            status = HttpStatus.OK;
+            orderService.updateDeliveryAddress(id, addressId);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to process order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> requestReturn(@PathVariable String id) {
+        HttpStatus status;
+        String message = "Return status progressing!";
+        try {
+            status = HttpStatus.OK;
+            orderService.requestReturn(id);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to process order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> changePaymentMode(@PathVariable String id, @RequestParam PaymentMode paymentMode) {
+        HttpStatus status;
+        String message = "PaymentMode updated!";
+        try {
+            status = HttpStatus.OK;
+            orderService.changePaymentMode(id, paymentMode);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to process order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    @PostMapping("/{id}")
+    private ResponseEntity<?> changeReturnStatus(@PathVariable String id, @RequestParam ReturnStatus returnStatus) {
+        HttpStatus status;
+        String message = "Return status updated!";
+        try {
+            status = HttpStatus.OK;
+            orderService.changeReturnStatus(id, returnStatus);
+        } catch (Exception e) {
+            status = HttpStatus.NOT_ACCEPTABLE;
+            message = "Something went wrong!, unable to process order!";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+}

@@ -18,6 +18,7 @@ public class ProductItem {
     private Double mrpPrice;
     private Double sellingPrice;
     private Integer quantity;
+    private Integer orderQty;
     private Integer stock;
     private Double discount;
 }

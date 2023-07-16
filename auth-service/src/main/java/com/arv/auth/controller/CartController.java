@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -31,9 +32,10 @@ public class CartController {
 
     @GetMapping
     private ResponseEntity<?> getCartItems(@RequestParam(required = false, defaultValue = "0") int pageNumber) throws JsonProcessingException {
-        String[] productIds = cartService.findAll().stream().map(Cart::getProductId).toArray(String[]::new);
+        List<Cart> cartList = cartService.findAll();
+        String[] productIds = cartList.stream().map(Cart::getProductId).toArray(String[]::new);
 
-        String uriWithParams = gatewayUrl+"/public/list?page=" + pageNumber;
+        String uriWithParams = gatewayUrl + "/public/list?page=" + pageNumber;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -43,7 +45,16 @@ public class CartController {
         String requestJson = mapper.writeValueAsString(new Products(productIds));
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
 
-        return globalCommonService.getResponseOfObject(Optional.ofNullable(globalCommonService.postForObject(uriWithParams, entity, ProductList.class)), HttpStatus.OK);
+        ProductList productList = (ProductList) globalCommonService.postForObject(uriWithParams, entity, ProductList.class);
+        productList.getProducts().forEach(productItem -> {
+            Integer orderQty = cartList.stream()
+                    .filter(cart -> cart.getProductId().equals(productItem.getId()))
+                    .findFirst()
+                    .map(Cart::getQty)
+                    .orElse(0);
+            productItem.setOrderQty(orderQty);
+        });
+        return globalCommonService.getResponseOfObject(Optional.of(productList), HttpStatus.OK);
     }
 
     @PostMapping

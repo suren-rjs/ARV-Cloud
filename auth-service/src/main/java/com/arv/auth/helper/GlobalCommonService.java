@@ -135,4 +135,9 @@ public class GlobalCommonService {
     public Object convertObject(Object object, Class<?> required) {
         return new ObjectMapper().convertValue(object, required);
     }
+
+    public int getTotalPage(int totalPage) {
+        totalPage = totalPage <= 1 ? 0 : (totalPage - 1);
+        return totalPage;
+    }
 }

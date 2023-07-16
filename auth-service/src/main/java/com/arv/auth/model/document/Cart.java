@@ -23,4 +23,5 @@ public class Cart {
     @NonNull
     @Indexed
     private String productId;
+    private Integer qty;
 }
