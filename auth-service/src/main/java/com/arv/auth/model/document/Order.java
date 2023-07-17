@@ -27,12 +27,19 @@ public class Order {
     @NonNull
     private List<Cart> orderItems;
     private PaymentStatus paymentStatus;
-    private OrderStatus orderStatus;
+    @Indexed
+    private OrderStatus orderStatus = OrderStatus.WAITING;
+    @Indexed
     private ReturnStatus returnStatus;
+    @Indexed
     private CancellationStatus cancellationStatus;
+    @Indexed
     private PaymentMode paymentMode = PaymentMode.WALLET;
+    @Indexed
     private String cancellationReason;
+    @Indexed
     private Boolean isCancelledOrder = false;
+    @Indexed
     private Boolean isReturnOrder = false;
     private Timestamp orderedDate = new Timestamp(new Date().getTime());
     private Timestamp placedDate;

@@ -1,20 +1,34 @@
 package com.arv.auth.service;
 
+import com.arv.auth.config.utils.JwtTokenProvider;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Address;
+import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.document.Order;
+import com.arv.auth.model.document.User;
+import com.arv.auth.model.dto.request.cart.PreserveStock;
 import com.arv.auth.model.dto.request.order.OrderDTO;
 import com.arv.auth.model.dto.request.order.OrderList;
+import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.model.enums.OrderStatus;
 import com.arv.auth.model.enums.PaymentMode;
 import com.arv.auth.model.enums.ReturnStatus;
 import com.arv.auth.repository.crud.AddressRepository;
 import com.arv.auth.repository.crud.OrderRepository;
 import com.arv.auth.repository.data.OrderDtoRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
@@ -33,6 +47,10 @@ public class OrderService implements OrderDtoRepository {
 
     @Autowired
     protected AddressRepository addressRepository;
+    @Autowired
+    protected AuthenticationManager authenticationManager;
+    @Autowired
+    protected JwtTokenProvider jwtTokenProvider;
 
     @Override
     public OrderList findAllByUserId(int pageNumber) {
@@ -46,7 +64,7 @@ public class OrderService implements OrderDtoRepository {
     @Override
     public Boolean isExistsById(String id) {
         String userId = globalCommonService.getCurrentUser().getId();
-        return orderRepository.isExistsByIdAndUserId(id, userId);
+        return orderRepository.existsByIdAndUserId(id, userId);
     }
 
     @Override
@@ -58,11 +76,74 @@ public class OrderService implements OrderDtoRepository {
     @Override
     public void newOrder(OrderDTO orderDTO) {
         String userId = globalCommonService.getCurrentUser().getId();
-        Address deliveryAddress = addressRepository.findOneByIdAndUserId(orderDTO.getAddressId(), userId).orElseThrow(() -> new NotFoundException("Invalid id"));
+        Address deliveryAddress = addressRepository.findOneByIdAndUserId(orderDTO.getAddressId(), userId).orElseThrow(() -> new NotFoundException("Invalid address id"));
         Order order = (Order) globalCommonService.convertObject(orderDTO, Order.class);
         order.setDeliveryAddress(deliveryAddress);
-        // TODO:// Preserve Order Count
-        orderRepository.save(order);
+        try {
+            preserveOrder(order);
+            orderRepository.save(order);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    private void preserveOrder(Order order) {
+        User currentUser = globalCommonService.getCurrentUser();
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(currentUser.getPhone(), currentUser.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String token = jwtTokenProvider.generateToken(authentication);
+        int size = order.getOrderItems().size(), maxIndex = 0;
+        boolean isFailure = false;
+        for (int i = 0; i < size; i++) {
+            Cart cart = order.getOrderItems().get(i);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Set the request body
+            ObjectMapper mapper = new ObjectMapper();
+            String requestJson;
+            try {
+                requestJson = mapper.writeValueAsString(new PreserveStock(cart.getProductId(), cart.getQty()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
+
+            ResponseMessage message = (ResponseMessage) globalCommonService.postForObject("http://192.168.2.3:8080/products/preserve", entity, ResponseMessage.class);
+            if (message.getMessage().equals("Stock preserved for order!")) {
+                maxIndex++;
+            } else {
+                isFailure = true;
+                break;
+            }
+        }
+
+        if (isFailure) {
+            extractInFailure(order, token, maxIndex);
+            throw new RuntimeException("Unable to process your order!");
+        }
+
+    }
+
+    private void extractInFailure(Order order, String token, int maxIndex) {
+        for (int i = 0; i < maxIndex; i++) {
+            Cart cart = order.getOrderItems().get(i);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(token);
+
+            // Set the request body
+            ObjectMapper mapper = new ObjectMapper();
+            String requestJson;
+            try {
+                requestJson = mapper.writeValueAsString(new PreserveStock(cart.getProductId(), cart.getQty()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
+            globalCommonService.postForObject("http://192.168.2.3:8080/products/preserve", entity, ResponseMessage.class);
+        }
     }
 
     @Override

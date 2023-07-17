@@ -39,5 +39,9 @@ public class User {
     @Indexed
     private List<String> roles;
     @JsonIgnore
+    private List<String> recentViews;
+    @JsonIgnore
+    private List<String> recentWishLists;
+    @JsonIgnore
     private Boolean activeStatus;
 }

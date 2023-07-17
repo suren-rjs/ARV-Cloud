@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface OrderRepository extends MongoRepository<Order, String> {
     Page<Order> findAllByUserId(String id, Pageable pageable);
-    Boolean isExistsByIdAndUserId(String id, String userId);
+    Boolean existsByIdAndUserId(String id, String userId);
 }
