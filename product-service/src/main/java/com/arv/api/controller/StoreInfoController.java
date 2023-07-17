@@ -1,7 +1,7 @@
 package com.arv.api.controller;
 
 import com.arv.api.helper.GlobalCommonService;
-import com.arv.api.model.dto.request.product.StoreDTO;
+import com.arv.api.model.dto.request.StoreDTO;
 import com.arv.api.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

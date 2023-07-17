@@ -1,7 +1,7 @@
 package com.arv.api.service.utils;
 
 import com.arv.api.helper.PictureDataMultipartFile;
-import com.arv.api.model.dto.request.product.ProductItemDTO;
+import com.arv.api.model.dto.request.ProductItemDTO;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;

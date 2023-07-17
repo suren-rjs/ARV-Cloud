@@ -1,4 +1,4 @@
-package com.arv.api.model.dto.request.product;
+package com.arv.api.model.dto.request;
 
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductSubCategory;

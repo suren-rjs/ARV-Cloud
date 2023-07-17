@@ -1,7 +1,7 @@
 package com.arv.api.repository.data;
 
 import com.arv.api.model.document.StoreInfo;
-import com.arv.api.model.dto.request.product.StoreDTO;
+import com.arv.api.model.dto.request.StoreDTO;
 import com.arv.api.model.dto.response.StoreList;
 
 import java.util.List;

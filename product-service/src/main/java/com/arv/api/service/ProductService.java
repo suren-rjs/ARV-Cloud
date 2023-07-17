@@ -4,7 +4,7 @@ import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.document.ProductSubCategory;
-import com.arv.api.model.dto.request.product.ProductItemDTO;
+import com.arv.api.model.dto.request.ProductItemDTO;
 import com.arv.api.model.dto.response.ProductList;
 import com.arv.api.repository.crud.ProductCategoryRepository;
 import com.arv.api.repository.crud.ProductItemRepository;
@@ -201,6 +201,22 @@ public class ProductService implements ProductDtoRepository {
         List<ProductItem> filteredProducts = new ArrayList<>(products.getContent());
 
         return new ProductList(filteredProducts, page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
+    }
+
+    @Override
+    public void preserveOrder(String id, int qty) {
+        ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
+        int afterPreservation = productItem.getStock() - qty;
+        productItem.setStock(afterPreservation);
+        productItemRepository.save(productItem);
+    }
+
+    @Override
+    public void unpreserve(String id, int qty) {
+        ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
+        int afterUnPreservation = productItem.getStock() + qty;
+        productItem.setStock(afterUnPreservation);
+        productItemRepository.save(productItem);
     }
 
     private ProductCategory getCategoryId(String nameOrId) {

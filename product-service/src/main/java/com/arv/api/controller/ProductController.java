@@ -1,8 +1,8 @@
 package com.arv.api.controller;
 
 import com.arv.api.helper.GlobalCommonService;
-import com.arv.api.model.dto.request.product.BulkUpload;
-import com.arv.api.model.dto.request.product.ProductItemDTO;
+import com.arv.api.model.dto.request.PreserveStock;
+import com.arv.api.model.dto.request.ProductItemDTO;
 import com.arv.api.service.ProductService;
 import com.arv.api.service.utils.MultipartFileToXLSXConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +90,36 @@ public class ProductController {
             return globalCommonService.getResponseOfObject(Optional.of(productService.getById(id)), response);
         } catch (Exception e) {
             message = "invalid id";
+            response = HttpStatus.NOT_ACCEPTABLE;
+        }
+
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @PostMapping("/preserve")
+    public ResponseEntity<?> preserveOrder(@RequestBody PreserveStock preserveStock) {
+        String message;
+        HttpStatus response = HttpStatus.OK;
+        try {
+            message = "Stock preserved for order!";
+            productService.preserveOrder(preserveStock.getProductId(), preserveStock.getQty());
+        } catch (Exception e) {
+            message = "Unable to preerve product quantity";
+            response = HttpStatus.NOT_ACCEPTABLE;
+        }
+
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @PostMapping("/unpreserve")
+    public ResponseEntity<?> unpreserve(@RequestBody PreserveStock preserveStock) {
+        String message;
+        HttpStatus response = HttpStatus.OK;
+        try {
+            message = "Restock successfully added!";
+            productService.unpreserve(preserveStock.getProductId(), preserveStock.getQty());
+        } catch (Exception e) {
+            message = "Unable to restock product quantity";
             response = HttpStatus.NOT_ACCEPTABLE;
         }
 
