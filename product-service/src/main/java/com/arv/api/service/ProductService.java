@@ -6,7 +6,6 @@ import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.document.ProductSubCategory;
 import com.arv.api.model.dto.request.ProductItemDTO;
 import com.arv.api.model.dto.response.ProductList;
-import com.arv.api.repository.crud.ProductCategoryRepository;
 import com.arv.api.repository.crud.ProductItemRepository;
 import com.arv.api.repository.data.ProductDtoRepository;
 import com.arv.api.service.utils.StorageService;
@@ -33,23 +32,21 @@ import java.util.Optional;
 @Service
 public class ProductService implements ProductDtoRepository {
     @Value("${product.pageSize}")
-    private int PAGE_COUNT;
+    protected int PAGE_COUNT;
     Logger logger = LoggerFactory.getLogger(ProductService.class);
 
     @Autowired
     protected ProductCategoryService productCategoryService;
     @Autowired
-    private ModelMapper modelMapper;
+    protected ModelMapper modelMapper;
     @Autowired
-    private ProductItemRepository productItemRepository;
-    @Autowired
-    private ProductCategoryRepository productCategoryRepository;
+    protected ProductItemRepository productItemRepository;
 
     @Autowired
-    private GlobalCommonService globalCommonService;
+    protected GlobalCommonService globalCommonService;
 
     @Autowired
-    private StorageService service;
+    protected StorageService service;
 
     @Override
     public <S extends ProductItem> void save(ProductItemDTO productItemDto) {
@@ -133,7 +130,6 @@ public class ProductService implements ProductDtoRepository {
         for (ProductItemDTO productItemDTO : productItemDTOList) {
             String categoryNameOrId = productItemDTO.getCategoryNameOrId();
             String subCategoryNameOrId = productItemDTO.getSubCategoryNameOrId();
-            String subCategoryTags = productItemDTO.getSubCategoryTags();
 
             ProductCategory productCategory = getCategoryId(categoryNameOrId);
             ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
@@ -159,40 +155,14 @@ public class ProductService implements ProductDtoRepository {
     @Override
     public ProductList search(String categoryId, String keyword, double priceFrom, double priceTo, int page) {
         Pageable pageable = PageRequest.of(page, PAGE_COUNT);
-
+        double startPrice = Math.min(priceFrom, priceTo);
+        double endPrice = Math.max(priceFrom, priceTo);
         // Perform the repository queries with pagination
-        Page<ProductItem> productsByNameOrDescription = productItemRepository.findByCategoryIdContainingIgnoreCaseOrProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(categoryId, keyword, keyword, pageable);
-        Page<ProductItem> productsBySellingPrice = productItemRepository.findByCategoryIdContainingIgnoreCaseAndSellingPriceBetween(categoryId, priceFrom - 1, priceTo + 1, pageable);
-        Page<ProductItem> productsByMrpPrice = productItemRepository.findByCategoryIdContainingIgnoreCaseAndMrpPriceBetween(categoryId, priceFrom - 1, priceTo + 1, pageable);
-        Page<ProductItem> productsByMinSellingPrice = productItemRepository.findByCategoryIdContainingIgnoreCaseAndSellingPriceGreaterThanEqual(categoryId, priceFrom - 1, pageable);
-        Page<ProductItem> productsByMinMrpPrice = productItemRepository.findByCategoryIdContainingIgnoreCaseAndMrpPriceGreaterThanEqual(categoryId, priceFrom - 1, pageable);
-        Page<ProductItem> productsByMaxSellingPrice = productItemRepository.findByCategoryIdContainingIgnoreCaseAndSellingPriceLessThanEqual(categoryId, priceTo + 1, pageable);
-        Page<ProductItem> productsByMaxMrpPrice = productItemRepository.findByCategoryIdContainingIgnoreCaseAndMrpPriceLessThanEqual(categoryId, priceTo + 1, pageable);
+        Page<ProductItem> products = productItemRepository.findByCategoryIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
+                categoryId, keyword, keyword, startPrice, endPrice, startPrice, endPrice, pageable
+        );
 
-        // Get the content of the pages as filtered products
-        List<ProductItem> filteredProducts = new ArrayList<>(productsByNameOrDescription.getContent());
-
-        ProductList productList = new ProductList(filteredProducts, page, productsByNameOrDescription.getTotalElements(), globalCommonService.getTotalPage(productsByNameOrDescription.getTotalPages()));
-
-        if (priceFrom == 0 && priceTo == 0) {
-            return productList;
-        } else if (priceFrom == 0) {
-            filteredProducts.retainAll(productsByMaxSellingPrice.getContent());
-            filteredProducts.retainAll(productsByMaxMrpPrice.getContent());
-        } else if (priceTo == 0) {
-            filteredProducts.retainAll(productsByMinSellingPrice.getContent());
-            filteredProducts.retainAll(productsByMinMrpPrice.getContent());
-        } else {
-            filteredProducts.retainAll(productsBySellingPrice.getContent());
-            filteredProducts.retainAll(productsByMrpPrice.getContent());
-        }
-
-        int totalPage = (filteredProducts.size() / PAGE_COUNT);
-        totalPage = totalPage <= 1 ? 0 : (totalPage - 1);
-
-        productList = new ProductList(filteredProducts, page, filteredProducts.size(), totalPage);
-
-        return productList;
+        return new ProductList(products.getContent(), page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
     }
 
     public ProductList findProductByIdsIn(String[] ids, int page) {

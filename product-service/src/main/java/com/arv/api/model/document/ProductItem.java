@@ -22,6 +22,9 @@ public class ProductItem {
     private String id;
     @NotNull
     private String storeId;
+    @Indexed
+    @JsonIgnore
+    private String majorCategoryId;
     @NotNull
     @UniqueElements
     private String productName;

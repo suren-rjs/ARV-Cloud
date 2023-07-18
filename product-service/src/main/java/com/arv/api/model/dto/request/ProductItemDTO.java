@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class ProductItemDTO {
     @NotNull
     private String storeId;
+    private String majorCategoryId;
     private String id;
     @NotNull
     private String productName;

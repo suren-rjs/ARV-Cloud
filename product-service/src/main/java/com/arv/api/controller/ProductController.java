@@ -40,8 +40,9 @@ public class ProductController {
     public ResponseEntity<?> bulkUpload(MultipartHttpServletRequest request) {
         try {
             String storeId = request.getParameter("storeId");
+            String majorCategoryId = request.getParameter("majorCategoryId");
             MultipartFile xmlFile = request.getFile("xmlFile");
-            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId);
+            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId, majorCategoryId);
             try {
                 productService.saveAll(productItemDTOList);
             } catch (Exception e) {

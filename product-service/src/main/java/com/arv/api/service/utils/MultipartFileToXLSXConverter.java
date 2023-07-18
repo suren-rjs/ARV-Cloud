@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Service
 public class MultipartFileToXLSXConverter {
-    public List<ProductItemDTO> convert(MultipartFile multipartFile, String storeId) throws Exception {
+    public List<ProductItemDTO> convert(MultipartFile multipartFile, String storeId, String majorCategoryId) throws Exception {
         try (InputStream inputStream = multipartFile.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
             String outputFilePath = "uploaded-file.xlsx";
             try (Workbook outputWorkbook = new XSSFWorkbook()) {
@@ -30,7 +30,7 @@ public class MultipartFileToXLSXConverter {
 
                 try (OutputStream outputStream = Files.newOutputStream(Paths.get(outputFilePath))) {
                     outputWorkbook.write(outputStream);
-                    return getProductItemDTOList(Optional.of(outputWorkbook), images, storeId);
+                    return getProductItemDTOList(Optional.of(outputWorkbook), images, storeId, majorCategoryId);
                 }
             }
         }
@@ -60,7 +60,7 @@ public class MultipartFileToXLSXConverter {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private List<ProductItemDTO> getProductItemDTOList(Optional<Workbook> uploadedData, List<?> images, String storeId) throws Exception {
+    private List<ProductItemDTO> getProductItemDTOList(Optional<Workbook> uploadedData, List<?> images, String storeId, String majorCategoryId) throws Exception {
         if (!uploadedData.isPresent()) {
             throw new Exception("Unable to upload");
         }
@@ -96,6 +96,7 @@ public class MultipartFileToXLSXConverter {
             itemDTO.setDiscount(discount);
             itemDTO.setProductVariation(productVariation);
             itemDTO.setStock(stock);
+            itemDTO.setMajorCategoryId(majorCategoryId);
             if (images.size() > i)
                 itemDTO.setImage(convertToMultipartFile((PictureData) images.get(i++)));
             itemDTO.setTags(tags);

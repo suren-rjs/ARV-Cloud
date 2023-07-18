@@ -11,19 +11,7 @@ import java.util.Optional;
 public interface ProductItemRepository extends MongoRepository<ProductItem, String> {
     Optional<ProductItem> findOneById(String id);
 
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseOrProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String categoryId, String name, String description, Pageable pageable);
-
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndSellingPriceBetween(String categoryId, double minSellingPrice, double maxSellingPrice, Pageable pageable);
-
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndMrpPriceBetween(String categoryId, double minMrpPrice, double maxMrpPrice, Pageable pageable);
-
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndSellingPriceGreaterThanEqual(String categoryId, double minSellingPrice, Pageable pageable);
-
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndMrpPriceGreaterThanEqual(String categoryId, double minSellingPrice, Pageable pageable);
-
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndSellingPriceLessThanEqual(String categoryId, double maxSellingPrice, Pageable pageable);
-
-    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndMrpPriceLessThanEqual(String categoryId, double maxMrpPrice, Pageable pageable);
+    Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(String categoryId, String productName, String description, double sStartPrice, double sEndPrice, double mStartPrice, double mEndPrice, Pageable pageable);
 
     Page<ProductItem> findAllByIdIn(String[] ids, Pageable pageable);
 }
