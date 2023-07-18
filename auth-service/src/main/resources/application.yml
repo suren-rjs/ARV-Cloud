@@ -11,3 +11,17 @@ eureka:
       defaultZone: http://localhost:8761/eureka
   instance:
     hostname: localhost
+
+cloud:
+  aws:
+    credentials:
+      access-key: AKIAY5P7AGA4RA7CDGEP
+      secret-key: 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
+    region:
+      static: ap-south-1
+    stack:
+      auto: false
+
+application:
+  bucket:
+    name: arv-cloud-bucket
