@@ -84,6 +84,7 @@ public class ProductService implements ProductDtoRepository {
 
     @Override
     public <S extends ProductItem> void updateById(ProductItemDTO updatedDetails) throws Exception {
+        modelMapper.getConfiguration().setAmbiguityIgnored(true);
         try {
             ProductItem productItem = getById(updatedDetails.getId());
             if (productItem == null) throw new Exception("Product not found");

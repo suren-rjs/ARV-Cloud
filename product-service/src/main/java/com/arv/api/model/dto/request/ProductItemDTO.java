@@ -38,4 +38,14 @@ public class ProductItemDTO {
     private Double discount;
     private String tags;
     private MultipartFile image;
+
+    @JsonIgnore
+    public String getCategoryId() {
+        return this.productCategory.getId();
+    }
+
+    @JsonIgnore
+    public String getSubCategoryId() {
+        return this.productSubCategory.getId();
+    }
 }

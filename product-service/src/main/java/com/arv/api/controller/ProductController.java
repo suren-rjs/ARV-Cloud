@@ -46,6 +46,7 @@ public class ProductController {
             try {
                 productService.saveAll(productItemDTOList);
             } catch (Exception e) {
+                System.out.println("Exception is : "+e.getMessage());
                 return globalCommonService.getResponseEntityByMessageAndStatus("Exception while save : " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
             }
 

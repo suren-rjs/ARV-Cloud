@@ -18,6 +18,7 @@ import java.util.Optional;
 @Service
 public class MultipartFileToXLSXConverter {
     public List<ProductItemDTO> convert(MultipartFile multipartFile, String storeId, String majorCategoryId) throws Exception {
+        System.out.println("Multipart file : " + multipartFile.toString());
         try (InputStream inputStream = multipartFile.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
             String outputFilePath = "uploaded-file.xlsx";
             try (Workbook outputWorkbook = new XSSFWorkbook()) {
@@ -85,7 +86,7 @@ public class MultipartFileToXLSXConverter {
 
             ProductItemDTO itemDTO = new ProductItemDTO();
             itemDTO.setStoreId(storeId);
-            itemDTO.setId(storeId+id);
+            itemDTO.setId(storeId + id);
             itemDTO.setProductName(name);
             itemDTO.setDescription(description);
             itemDTO.setCategoryNameOrId(category);
@@ -120,6 +121,7 @@ public class MultipartFileToXLSXConverter {
             return defaultValue;
         }
     }
+
     private Integer getIntegerValue(Row row) {
         try {
             return (int) row.getCell(9).getNumericCellValue();
