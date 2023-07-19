@@ -7,14 +7,14 @@ spring:
         - id: arv-admin-service
           uri: lb://ARV-IDENTITY-SERVICE
           predicates:
-            - Path=/admin/**, /auth
+            - Path=/admin/**, /auth, /auth/**,
           filters:
             - AdminFilter
 
         - id: arv-identity-service
           uri: lb://ARV-IDENTITY-SERVICE
           predicates:
-            - Path=/help, /auth/**, /swagger-ui/**, /v3/**, /address, /address/**, /wishlist, /wishlist/**, /cart, /cart/**
+            - Path=/help, /auth/**, /swagger-ui/**, /v3/**, /address, /address/**, /wishlist, /wishlist/**, /cart, /cart/**, /orders, /orders/**, /features, /features/**, /homeBanner, /homeBanner/**
           filters:
             - name: CircuitBreaker
               args:

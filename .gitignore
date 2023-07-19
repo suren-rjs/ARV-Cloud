@@ -7,3 +7,4 @@
 /hystrix-dashboard/target/
 /service-registry/target/
 /order-service/
+/.idea/

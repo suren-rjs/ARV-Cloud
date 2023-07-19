@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-services
+  labels:
+    app: product-services
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: product-services
+  template:
+    metadata:
+      labels:
+        app: product-services
+    spec:
+      containers:
+      - name: product-services
+        image: surenrjs/product-services:1
+        ports:
+        - containerPort: 8081
