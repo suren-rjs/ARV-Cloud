@@ -8,6 +8,7 @@ import com.arv.auth.model.enums.ReturnStatus;
 
 public interface OrderDtoRepository {
     OrderList findAllByUserId(int page);
+    OrderList findAll(int page);
 
     Boolean isExistsById(String id);
 

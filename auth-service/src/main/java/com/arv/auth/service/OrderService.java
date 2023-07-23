@@ -1,14 +1,14 @@
 package com.arv.auth.service;
 
-import com.arv.auth.config.utils.JwtTokenProvider;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Address;
-import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.document.Order;
-import com.arv.auth.model.document.User;
+import com.arv.auth.model.dto.request.cart.CartDto;
 import com.arv.auth.model.dto.request.cart.PreserveStock;
 import com.arv.auth.model.dto.request.order.OrderDTO;
 import com.arv.auth.model.dto.request.order.OrderList;
+import com.arv.auth.model.dto.request.order.Orders;
+import com.arv.auth.model.dto.response.OrderStatement;
 import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.model.enums.OrderStatus;
 import com.arv.auth.model.enums.PaymentMode;
@@ -25,14 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.webjars.NotFoundException;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -47,16 +42,20 @@ public class OrderService implements OrderDtoRepository {
 
     @Autowired
     protected AddressRepository addressRepository;
-    @Autowired
-    protected AuthenticationManager authenticationManager;
-    @Autowired
-    protected JwtTokenProvider jwtTokenProvider;
 
     @Override
     public OrderList findAllByUserId(int pageNumber) {
         String userId = globalCommonService.getCurrentUser().getId();
         Pageable pageable = PageRequest.of(pageNumber, 15);
         Page<Order> page = orderRepository.findAllByUserId(userId, pageable);
+        List<Order> list = page.getContent();
+        return new OrderList(list, pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
+    }
+
+    @Override
+    public OrderList findAll(int pageNumber) {
+        Pageable pageable = PageRequest.of(pageNumber, 15);
+        Page<Order> page = orderRepository.findAll(pageable);
         List<Order> list = page.getContent();
         return new OrderList(list, pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
     }
@@ -79,26 +78,24 @@ public class OrderService implements OrderDtoRepository {
         Address deliveryAddress = addressRepository.findOneByIdAndUserId(orderDTO.getAddressId(), userId).orElseThrow(() -> new NotFoundException("Invalid address id"));
         Order order = (Order) globalCommonService.convertObject(orderDTO, Order.class);
         order.setDeliveryAddress(deliveryAddress);
+        order.setUserId(userId);
+        order.setOrderedDate(new Date());
         try {
-            preserveOrder(order);
-            orderRepository.save(order);
+            Order preservedOrder = preserveOrder(order, orderDTO.getAccessToken());
+            orderRepository.save(preservedOrder);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
-    private void preserveOrder(Order order) {
-        User currentUser = globalCommonService.getCurrentUser();
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(currentUser.getPhone(), currentUser.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtTokenProvider.generateToken(authentication);
+    private Order preserveOrder(Order order, String accessToken) {
         int size = order.getOrderItems().size(), maxIndex = 0;
         boolean isFailure = false;
         for (int i = 0; i < size; i++) {
-            Cart cart = order.getOrderItems().get(i);
+            CartDto cart = order.getOrderItems().get(i);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(token);
+            headers.setBearerAuth(accessToken);
 
             // Set the request body
             ObjectMapper mapper = new ObjectMapper();
@@ -120,15 +117,31 @@ public class OrderService implements OrderDtoRepository {
         }
 
         if (isFailure) {
-            extractInFailure(order, token, maxIndex);
+            extractInFailure(order, accessToken, maxIndex);
             throw new RuntimeException("Unable to process your order!");
         }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
 
+        // Set the request body
+        ObjectMapper mapper = new ObjectMapper();
+        String requestJson;
+        Orders orders = new Orders(order.getOrderItems());
+        try {
+            requestJson = mapper.writeValueAsString(orders);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
+        OrderStatement orderStatement = (OrderStatement) globalCommonService.postForObject("http://192.168.2.3:8080/public/getStatment", entity, OrderStatement.class);
+        order.setTotalAmount(orderStatement.getTotalAmount());
+        return order;
     }
 
     private void extractInFailure(Order order, String token, int maxIndex) {
         for (int i = 0; i < maxIndex; i++) {
-            Cart cart = order.getOrderItems().get(i);
+            CartDto cart = order.getOrderItems().get(i);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(token);
@@ -172,7 +185,7 @@ public class OrderService implements OrderDtoRepository {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.ORDER_PLACED);
-        order.setPlacedDate(new Timestamp(new Date().getTime()));
+        order.setPlacedDate(new Date());
         orderRepository.save(order);
     }
 
@@ -189,7 +202,7 @@ public class OrderService implements OrderDtoRepository {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.DELIVERED);
-        order.setOrderedDate(new Timestamp(new Date().getTime()));
+        order.setOrderedDate(new Date());
         orderRepository.save(order);
     }
 

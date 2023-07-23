@@ -19,5 +19,7 @@ public class OrderDTO {
     private List<CartDto> orderItems;
     private PaymentMode paymentMode = PaymentMode.WALLET;
     private String addressId;
+    @NonNull
+    private String accessToken;
     private Timestamp orderedDate = new Timestamp(new Date().getTime());
 }

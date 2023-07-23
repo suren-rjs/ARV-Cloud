@@ -1,6 +1,8 @@
 package com.arv.auth.model.document;
 
+import com.arv.auth.model.dto.request.cart.CartDto;
 import com.arv.auth.model.enums.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +11,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class Order {
     @NonNull
     private String userId;
     @NonNull
-    private List<Cart> orderItems;
+    private List<CartDto> orderItems;
     private PaymentStatus paymentStatus;
     @Indexed
     private OrderStatus orderStatus = OrderStatus.WAITING;
@@ -41,13 +42,17 @@ public class Order {
     private Boolean isCancelledOrder = false;
     @Indexed
     private Boolean isReturnOrder = false;
-    private Timestamp orderedDate = new Timestamp(new Date().getTime());
-    private Timestamp placedDate;
-    private Timestamp expectedDeliveryDate;
-    private Timestamp deliveredDate;
-    private double orderValue;
-    private double deliveryCharge;
-    private double taxPercentage;
-    private double totalAmount;
+    private Date orderedDate;
+    private Date placedDate;
+    private Date expectedDeliveryDate;
+    private Date deliveredDate;
+    private Double orderValue;
+    private Double deliveryCharge;
+    private Double taxPercentage;
+    private Double totalAmount;
+    @JsonIgnore
+    private String addressId;
+    @JsonIgnore
+    private String accessToken;
     private Address deliveryAddress;
 }

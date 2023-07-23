@@ -30,6 +30,14 @@ public class OrderController {
             return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
+    @GetMapping("/all")
+    private ResponseEntity<?> getAllOrder(@RequestParam(required = false, defaultValue = "0") int page) {
+        try {
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findAll(page)), HttpStatus.OK);
+        } catch (Exception e) {
+            return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 
     @GetMapping("/{id}")
     private ResponseEntity<?> getOrder(@PathVariable String id) {

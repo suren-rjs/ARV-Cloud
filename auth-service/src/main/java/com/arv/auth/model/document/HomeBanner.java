@@ -10,11 +10,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("cart")
+@Document("banner")
 public class HomeBanner {
     @Id
     private String id;
-    @JsonIgnore
     private double percentage;
+    private String name;
     private String imageUri;
 }
