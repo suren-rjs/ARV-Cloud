@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
 
@@ -23,7 +24,6 @@ public class ProductItem {
     @NotNull
     private String storeId;
     @Indexed
-    @JsonIgnore
     private String majorCategoryId;
     @NotNull
     @UniqueElements
@@ -54,5 +54,11 @@ public class ProductItem {
     @Indexed
     private Double discount;
     private String tags;
-    private String image;
+    private String imageUri;
+    @JsonIgnore
+    private MultipartFile imageFile;
+    @JsonIgnore
+    private String categoryNameOrId;
+    @JsonIgnore
+    private String subCategoryNameOrId;
 }

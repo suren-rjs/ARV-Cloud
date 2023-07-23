@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -14,4 +15,6 @@ public interface ProductItemRepository extends MongoRepository<ProductItem, Stri
     Page<ProductItem> findByCategoryIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(String categoryId, String productName, String description, double sStartPrice, double sEndPrice, double mStartPrice, double mEndPrice, Pageable pageable);
 
     Page<ProductItem> findAllByIdIn(String[] ids, Pageable pageable);
+
+    Optional<List<ProductItem>> findAllByIdIn(String[] ids);
 }

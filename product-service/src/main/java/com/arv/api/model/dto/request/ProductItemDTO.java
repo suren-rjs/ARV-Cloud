@@ -3,7 +3,9 @@ package com.arv.api.model.dto.request;
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductSubCategory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +14,8 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductItemDTO {
     @NotNull
     private String storeId;
@@ -37,14 +41,14 @@ public class ProductItemDTO {
     private Integer stock;
     private Double discount;
     private String tags;
-    private MultipartFile image;
 
-    @JsonIgnore
+    private byte[] image;
+    private MultipartFile imageFile;
+
     public String getCategoryId() {
         return this.productCategory.getId();
     }
 
-    @JsonIgnore
     public String getSubCategoryId() {
         return this.productSubCategory.getId();
     }

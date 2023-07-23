@@ -98,7 +98,7 @@ public class MultipartFileToXLSXConverter {
             itemDTO.setStock(stock);
             itemDTO.setMajorCategoryId(majorCategoryId);
             if (images.size() > i)
-                itemDTO.setImage(convertToMultipartFile((PictureData) images.get(i++)));
+                itemDTO.setImageFile(convertToMultipartFile((PictureData) images.get(i++)));
             itemDTO.setTags(tags);
             productItemDTOList.add(itemDTO);
         }

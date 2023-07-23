@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-@SuppressWarnings("All")
+@SuppressWarnings("unused")
 @RestController
 @RequestMapping(value = "/store", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StoreInfoController {

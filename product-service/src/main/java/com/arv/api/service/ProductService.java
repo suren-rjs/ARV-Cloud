@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,7 +51,18 @@ public class ProductService implements ProductDtoRepository {
 
     @Override
     public <S extends ProductItem> void save(ProductItemDTO productItemDto) {
-        ProductItem productItem = modelMapper.map(productItemDto, ProductItem.class);
+        String id = productItemDto.getStoreId() + productItemDto.getProductName().toLowerCase().replaceAll(" ", "-");
+
+        ProductItem productItem = new ProductItem();
+        productItem.setProductName(productItemDto.getProductName());
+        productItem.setDescription(productItemDto.getDescription());
+        productItem.setSubCategoryTags(productItemDto.getSubCategoryTags());
+        productItem.setSellingPrice(productItemDto.getSellingPrice());
+        productItem.setMrpPrice(productItemDto.getMrpPrice());
+        productItem.setQuantity(productItemDto.getQuantity());
+        productItem.setStock(productItemDto.getStock());
+        productItem.setDiscount(productItemDto.getDiscount());
+        productItem.setTags(productItemDto.getTags());
 
         String categoryNameOrId = productItemDto.getCategoryNameOrId();
         String subCategoryNameOrId = productItemDto.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDto.getSubCategoryNameOrId();
@@ -66,9 +78,9 @@ public class ProductService implements ProductDtoRepository {
         productItem.setProductCategory(productCategory);
         productItem.setProductSubCategory(productSubCategory);
 
-        productItem.setImage(uploadFile(productItemDto.getImage(), productItemDto.getProductName().toLowerCase().replaceAll(" ", "-")));
+        productItem.setImageUri(uploadFile(convertBytesToMux(productItemDto.getImage(), id, "image/jpeg"), id));
         productItem.setTags(productItemDto.getTags());
-        productItem.setId(productItemDto.getStoreId() + productItemDto.getProductName().toLowerCase().replaceAll(" ", "-"));
+        productItem.setId(id);
 
         productItemRepository.save(productItem);
     }
@@ -77,6 +89,7 @@ public class ProductService implements ProductDtoRepository {
     public void deleteById(String id) {
         try {
             getById(id);
+            deleteFile(id);
             productItemRepository.deleteById(id);
         } catch (Exception ignored) {
         }
@@ -88,7 +101,15 @@ public class ProductService implements ProductDtoRepository {
         try {
             ProductItem productItem = getById(updatedDetails.getId());
             if (productItem == null) throw new Exception("Product not found");
-            productItem = modelMapper.map(updatedDetails, ProductItem.class);
+            productItem.setProductName(updatedDetails.getProductName());
+            productItem.setDescription(updatedDetails.getDescription());
+            productItem.setSubCategoryTags(updatedDetails.getSubCategoryTags());
+            productItem.setSellingPrice(updatedDetails.getSellingPrice());
+            productItem.setMrpPrice(updatedDetails.getMrpPrice());
+            productItem.setQuantity(updatedDetails.getQuantity());
+            productItem.setStock(updatedDetails.getStock());
+            productItem.setDiscount(updatedDetails.getDiscount());
+            productItem.setTags(updatedDetails.getTags());
 
             String categoryNameOrId = updatedDetails.getCategoryNameOrId();
             String subCategoryNameOrId = updatedDetails.getSubCategoryNameOrId() == null ? categoryNameOrId : updatedDetails.getSubCategoryNameOrId();
@@ -103,7 +124,7 @@ public class ProductService implements ProductDtoRepository {
             productItem.setProductSubCategory(productSubCategory);
 
             if (updatedDetails.getImage() != null) {
-                productItem.setImage(uploadFile(updatedDetails.getImage(), updatedDetails.getProductName().toLowerCase().replaceAll(" ", "-")));
+                productItem.setImageUri(uploadFile(convertBytesToMux(updatedDetails.getImage(), updatedDetails.getId(), "image/jpeg"), updatedDetails.getId()));
             }
 
             productItemRepository.save(productItem);
@@ -114,11 +135,7 @@ public class ProductService implements ProductDtoRepository {
 
     @Override
     public <S extends ProductItem> ProductItem getById(String id) throws Exception {
-        if (productItemRepository.existsById(id)) {
-            return productItemRepository.findOneById(id).orElse(null);
-        } else {
-            throw new Exception("Product not exist");
-        }
+        return productItemRepository.findOneById(id).orElseThrow(() -> new Exception("Product not exist"));
     }
 
     @Override
@@ -146,7 +163,7 @@ public class ProductService implements ProductDtoRepository {
         Iterable<ProductItem> iterableProductItems = () -> productItemDTOList.stream().map(productItemDTO -> {
             ProductItem productItem = modelMapper.map(productItemDTO, ProductItem.class);
             if (productItemDTO.getImage() != null)
-                productItem.setImage(uploadFile(productItemDTO.getImage(), productItemDTO.getId()));
+                productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), productItemDTO.getId()));
             return productItem;
         }).iterator();
 
@@ -172,6 +189,10 @@ public class ProductService implements ProductDtoRepository {
         List<ProductItem> filteredProducts = new ArrayList<>(products.getContent());
 
         return new ProductList(filteredProducts, page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
+    }
+
+    public List<ProductItem> findProductByIdsIn(String[] ids) {
+        return productItemRepository.findAllByIdIn(ids).orElse(new ArrayList<>());
     }
 
     @Override
@@ -231,6 +252,10 @@ public class ProductService implements ProductDtoRepository {
                 .contentLength(data.length)
                 .headers(headers)
                 .body(resource);
+    }
+
+    public static MultipartFile convertBytesToMux(byte[] data, String filename, String contentType) {
+        return new MockMultipartFile(filename, filename, contentType, data);
     }
 
     private void deleteFile(String fileName) {

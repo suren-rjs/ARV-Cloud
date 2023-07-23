@@ -92,10 +92,12 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubCategories")
-    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
+    public ResponseEntity<?> getSubSubCategories(@RequestParam(required = false, defaultValue = "") String categoryId, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, 15);
         Page<ProductSubCategory> page;
-        if (keyword.replaceAll(" ", "").isEmpty())
+        if (categoryId.equals(""))
+            page = productSubCategoryRepository.findAll(pageable);
+        else if (keyword.replaceAll(" ", "").isEmpty())
             page = productSubCategoryRepository.findAllByCategoryId(categoryId, pageable);
         else
             page = productSubCategoryRepository.findAllByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword, pageable);

@@ -1,6 +1,9 @@
 package com.arv.api.controller;
 
 import com.arv.api.helper.GlobalCommonService;
+import com.arv.api.model.document.ProductItem;
+import com.arv.api.model.dto.request.CartDto;
+import com.arv.api.model.dto.request.Orders;
 import com.arv.api.model.dto.request.Products;
 import com.arv.api.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings("All")
@@ -39,5 +45,26 @@ public class PublicController {
     @GetMapping("/products/image/{productId}")
     public ResponseEntity<?> getProductImages(@PathVariable("productId") String productId) {
         return productService.downloadFile(productId);
+    }
+
+    @PostMapping("/getStatment")
+    public ResponseEntity<?> getProductImages(@RequestBody Orders orders) {
+        List<ProductItem> productsList = productService.findProductByIdsIn(orders.getList().stream().map(CartDto::getProductId).toArray(String[]::new));
+        Double totalAmount = 0.0;
+        Map<String, Integer> productQuantityMap = new HashMap<>();
+
+        orders.getList().forEach(cartDto -> {
+            String productId = cartDto.getProductId();
+            int quantity = cartDto.getQty();
+            productQuantityMap.put(productId, productQuantityMap.getOrDefault(productId, 0) + quantity);
+        });
+
+        for (ProductItem productItem : productsList) {
+            String productId = productItem.getId();
+            int quantity = productQuantityMap.getOrDefault(productId, 0);
+            totalAmount += quantity * productItem.getSellingPrice();
+        }
+
+        return new ResponseEntity<>(totalAmount, HttpStatus.OK);
     }
 }
