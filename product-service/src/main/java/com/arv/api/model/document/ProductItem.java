@@ -31,10 +31,8 @@ public class ProductItem {
     private String description;
     @NotNull
     @Indexed
-    @JsonIgnore
     private String categoryId;
     @Indexed
-    @JsonIgnore
     private String subCategoryId;
     @DBRef
     private ProductCategory productCategory;

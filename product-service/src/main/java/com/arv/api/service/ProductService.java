@@ -161,9 +161,33 @@ public class ProductService implements ProductDtoRepository {
         }
 
         Iterable<ProductItem> iterableProductItems = () -> productItemDTOList.stream().map(productItemDTO -> {
-            ProductItem productItem = modelMapper.map(productItemDTO, ProductItem.class);
+            String id = productItemDTO.getStoreId() + productItemDTO.getProductName().toLowerCase().replaceAll(" ", "-");
+
+            ProductItem productItem = new ProductItem();
+            productItem.setProductName(productItemDTO.getProductName());
+            productItem.setDescription(productItemDTO.getDescription());
+            productItem.setSubCategoryTags(productItemDTO.getSubCategoryTags());
+            productItem.setSellingPrice(productItemDTO.getSellingPrice());
+            productItem.setMrpPrice(productItemDTO.getMrpPrice());
+            productItem.setQuantity(productItemDTO.getQuantity());
+            productItem.setStock(productItemDTO.getStock());
+            productItem.setDiscount(productItemDTO.getDiscount());
+            productItem.setTags(productItemDTO.getTags());
+
+            String categoryNameOrId = productItemDTO.getCategoryNameOrId();
+            String subCategoryNameOrId = productItemDTO.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDTO.getSubCategoryNameOrId();
+
+            ProductCategory productCategory = getCategoryId(categoryNameOrId);
+            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+
+            productItem.setCategoryId(productCategory.getId());
+            productItem.setSubCategoryId(productSubCategory.getId());
+
+            productItem.setProductCategory(productCategory);
+            productItem.setProductSubCategory(productSubCategory);
+            productItem.setId(id);
             if (productItemDTO.getImage() != null)
-                productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), productItemDTO.getId()));
+                productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), id));
             return productItem;
         }).iterator();
 

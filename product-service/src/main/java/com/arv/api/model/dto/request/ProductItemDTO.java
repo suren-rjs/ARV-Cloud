@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
@@ -19,21 +20,34 @@ import javax.validation.constraints.NotNull;
 public class ProductItemDTO {
     @NotNull
     private String storeId;
+
     private String majorCategoryId;
+
+    @Field("Id")
     private String id;
+
     @NotNull
     private String productName;
+
     private String description;
+
     @NotNull
+    @Field("categoryId")
     private String categoryNameOrId;
+
+    @Field("subCategoryId")
     private String subCategoryNameOrId;
+
     private String subCategoryTags;
+
     @DBRef
     @JsonIgnore
     private ProductCategory productCategory;
+
     @DBRef
     @JsonIgnore
     private ProductSubCategory productSubCategory;
+
     private String productVariation;
     private Double mrpPrice;
     private Double sellingPrice;
