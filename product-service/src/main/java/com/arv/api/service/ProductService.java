@@ -186,7 +186,7 @@ public class ProductService implements ProductDtoRepository {
             productItem.setProductCategory(productCategory);
             productItem.setProductSubCategory(productSubCategory);
             productItem.setId(id);
-            if (productItemDTO.getImage() != null)
+            if (productItemDTO.getImageFile() != null)
                 productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), id));
             return productItem;
         }).iterator();
