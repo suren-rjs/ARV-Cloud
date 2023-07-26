@@ -9,5 +9,5 @@ RUN mvn clean package
 FROM adoptopenjdk:11-jre-hotspot
 EXPOSE 8081
 WORKDIR /app
-COPY --from=build /app/target/product-services.jar .
-ENTRYPOINT ["java", "-jar", "product-services.jar"]
+COPY --from=build /app/target/product-service.jar .
+ENTRYPOINT ["java", "-jar", "product-service.jar"]
