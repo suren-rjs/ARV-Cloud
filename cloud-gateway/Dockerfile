@@ -7,7 +7,7 @@ RUN mvn clean package
 
 # Package stage
 FROM adoptopenjdk:11-jre-hotspot
-EXPOSE 8080
+EXPOSE 8090
 WORKDIR /app
 COPY --from=build /app/target/cloud-gateway.jar .
 ENTRYPOINT ["java", "-jar", "cloud-gateway.jar"]

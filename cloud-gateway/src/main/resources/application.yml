@@ -7,7 +7,7 @@ spring:
         - id: arv-admin-service
           uri: lb://ARV-IDENTITY-SERVICE
           predicates:
-            - Path=/admin/**, /auth, /auth/**,
+            - Path=/admin/**, /auth
           filters:
             - AdminFilter
 
@@ -24,7 +24,7 @@ spring:
         - id: arv-product-manager-service
           uri: lb://ARV-PRODUCT-SERVICE
           predicates:
-            - Path=/products, /productCategories, /productSubCategories, /products/*, /productCategories/**, /productSubCategories/**,
+            - Path=/products, /productCategories, /productSubCategories, /products/**, /productCategories/**, /productSubCategories/**,
           filters:
             - ManagerFilter
 
@@ -38,7 +38,7 @@ spring:
                 name: arv-product-service
                 fallbackuri: forward:/productFallBack
 server:
-  port: 8080
+  port: 8090
 
 management:
   endpoints:

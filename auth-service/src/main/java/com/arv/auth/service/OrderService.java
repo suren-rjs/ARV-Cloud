@@ -19,6 +19,7 @@ import com.arv.auth.repository.data.OrderDtoRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,8 @@ import java.util.List;
 
 @Service
 public class OrderService implements OrderDtoRepository {
+    @Value("${gateway.url}")
+    protected String GATEWAY;
 
     @Autowired
     protected OrderRepository orderRepository;
@@ -107,7 +110,7 @@ public class OrderService implements OrderDtoRepository {
             }
             HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
 
-            ResponseMessage message = (ResponseMessage) globalCommonService.postForObject("http://192.168.2.3:8080/products/preserve", entity, ResponseMessage.class);
+            ResponseMessage message = (ResponseMessage) globalCommonService.postForObject(GATEWAY + "/products/preserve", entity, ResponseMessage.class);
             if (message.getMessage().equals("Stock preserved for order!")) {
                 maxIndex++;
             } else {
@@ -134,7 +137,7 @@ public class OrderService implements OrderDtoRepository {
             throw new RuntimeException(e);
         }
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
-        OrderStatement orderStatement = (OrderStatement) globalCommonService.postForObject("http://192.168.2.3:8080/public/getStatment", entity, OrderStatement.class);
+        OrderStatement orderStatement = (OrderStatement) globalCommonService.postForObject(GATEWAY + "/public/getStatment", entity, OrderStatement.class);
         order.setTotalAmount(orderStatement.getTotalAmount());
         return order;
     }
@@ -155,7 +158,7 @@ public class OrderService implements OrderDtoRepository {
                 throw new RuntimeException(e);
             }
             HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
-            globalCommonService.postForObject("http://192.168.2.3:8080/products/preserve", entity, ResponseMessage.class);
+            globalCommonService.postForObject(GATEWAY + "/products/preserve", entity, ResponseMessage.class);
         }
     }
 
