@@ -47,15 +47,28 @@ pipeline {
         }
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-                sh '''
-                    git config user.email "suren.rjs@gmail.com"
-                    git config user.name "suren-rjs"
-                    BUILD_NUMBER=${BUILD_NUMBER}
-                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" auth-service/deployment.yml
-                    git add auth-service/deployment.yml
-                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                '''
+                script {
+                    sh '''
+                        git config user.email "suren.rjs@gmail.com"
+                        git config user.name "suren-rjs"
+                        BUILD_NUMBER=${BUILD_NUMBER}
+                        sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" auth-service/deployment.yml
+                    '''
+    
+                    // Check if changes were made
+                    script {
+                        def changes = sh(returnStatus: true, script: "git diff --exit-code auth-service/deployment.yml").status
+                        if (changes != 0) {
+                            sh '''
+                                git add auth-service/deployment.yml
+                                git commit -m "Update deployment image to version ${BUILD_NUMBER}" 
+                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                            '''
+                        } else {
+                            echo "No changes to commit."
+                        }
+                    }
+                }
             }
         }
     }
