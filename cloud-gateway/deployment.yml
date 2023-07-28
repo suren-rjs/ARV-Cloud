@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: cloud-gateway
-        image: surenrjs/cloud-gateway:1
+        image: surenrjs/cloud-gateway:${IMAGE_TAG}
         ports:
         - containerPort: 8090

@@ -54,19 +54,19 @@ pipeline {
                         BUILD_NUMBER=${BUILD_NUMBER}
                         sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" service-registry/deployment.yml
                     '''
+                }
 
-                    // Check if changes were made
-                    script {
-                        def gitStatus = sh(returnStatus: true, script: 'git status -s').status
-                        if (gitStatus != 0) {
-                            sh '''
-                                git add service-registry/deployment.yml
-                                git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                                git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
-                            '''
-                        } else {
-                            echo "No changes to commit."
-                        }
+                // Check if changes were made
+                script {
+                    def gitStatus = sh(returnStatus: true, script: 'git status -s').status
+                    if (gitStatus != 0) {
+                        sh '''
+                            git add service-registry/deployment.yml
+                            git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:master
+                        '''
+                    } else {
+                        echo "No changes to commit."
                     }
                 }
             }

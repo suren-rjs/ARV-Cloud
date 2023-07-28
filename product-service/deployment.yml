@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: product-service
-        image: surenrjs/product-service:1
+        image: surenrjs/product-service:${IMAGE_TAG}
         ports:
         - containerPort: 8081

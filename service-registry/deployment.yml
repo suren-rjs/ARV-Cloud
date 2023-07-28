@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: service-registry
-        image: surenrjs/service-registry:1
+        image: surenrjs/service-registry:${IMAGE_TAG}
         ports:
         - containerPort: 8761

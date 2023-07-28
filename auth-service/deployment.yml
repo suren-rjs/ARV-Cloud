@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: surenrjs/auth-service:1
+        image: surenrjs/auth-service:${IMAGE_TAG}
         ports:
         - containerPort: 8082
