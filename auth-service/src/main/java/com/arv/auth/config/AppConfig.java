@@ -1,7 +1,6 @@
 package com.arv.auth.config;
 
 import com.arv.auth.service.UserService;
-import lombok.NonNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,11 +15,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("unused")
 public class AppConfig {
 
     @Bean
@@ -61,23 +59,6 @@ public class AppConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public WebMvcConfigurer configure() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(@NonNull CorsRegistry registry) {
-                registry.addMapping("/**")
-//                        .allowedOrigins("https://e-store-0.web.app")
-                        .allowedOrigins("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("Content-Type", "Authorization")
-                        .exposedHeaders("Custom-Header1", "Custom-Header2")
-                        .allowCredentials(true)
-                        .maxAge(3600);
-            }
-        };
     }
 
 }
