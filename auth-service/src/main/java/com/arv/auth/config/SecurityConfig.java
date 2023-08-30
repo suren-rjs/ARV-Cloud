@@ -20,18 +20,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final String[] PUBLIC_END_POINTS = {"/auth-help", "/auth/**", "/v3/**", "/help/**", "/swagger-ui/**", "/notification/**", "/", "/actuator/info", "/homeBanner/**"};
+    private final String[] PUBLIC_END_POINTS = {"/auth-help", "/auth/**", "/v3/**", "/help/**", "/swagger-ui/**", "/notification/**", "/", "/actuator/info", "/homeBanner/**", "/api", "/api/**"};
     private final String[] CUSTOMER_END_POINTS = {"/cart", "/cart/**", "/wishlist", "/wishlist/**", "/orders", "/orders/**", "/features/**"};
     private final String[] MANAGER_END_POINTS = {"/products/**", "/productCategories/**", "/productSubCategories/**", "/productSubSubCategories/**", "/notification/**", "/homeBanner"};
     private final String[] ADMIN_END_POINTS = {"/admin/**",};
     @Autowired
-    private UserDetailsService userDetailsService;
+    protected UserDetailsService userDetailsService;
     @Autowired
-    private UnauthorisedEntryPoint unauthorisedEntryPoint;
+    protected UnauthorisedEntryPoint unauthorisedEntryPoint;
     @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    protected JwtAuthenticationFilter jwtAuthenticationFilter;
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    protected BCryptPasswordEncoder passwordEncoder;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

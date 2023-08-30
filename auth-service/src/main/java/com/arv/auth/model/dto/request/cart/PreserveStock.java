@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class PreserveStock {
     private String productId;
     private int qty;
+    private String variant;
 }

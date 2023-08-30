@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CartDto {
     private String productId;
+    private String variant;
     private Integer qty;
 }

@@ -28,6 +28,11 @@ public class HomeBannerService implements HomeBannerDtoRepository {
     }
 
     @Override
+    public Page<HomeBanner> searchByName(String name, Pageable pageable) {
+        return homeBannerRepository.findByNameContainingIgnoreCase(name, pageable);
+    }
+
+    @Override
     public HomeBanner findById(String id) {
         return homeBannerRepository.findById(id).orElseThrow(() -> new RuntimeException("Invalid id"));
     }
@@ -37,6 +42,7 @@ public class HomeBannerService implements HomeBannerDtoRepository {
         HomeBanner homeBanner = new HomeBanner();
         homeBanner.setPercentage(homeBannerDTO.getPercentage());
         homeBanner.setName(homeBannerDTO.getName());
+        homeBanner.setHomeBannerSection(homeBannerDTO.getHomeBannerSection());
         homeBanner = homeBannerRepository.save(homeBanner);
         homeBanner.setImageUri(uploadFile(convertBytesToMux(homeBannerDTO.getUInt8List(), "banner-" + homeBanner.getId() + ".jpeg", "image/jpeg"), "banner-" + homeBanner.getId()));
 

@@ -1,5 +1,6 @@
 package com.arv.auth.model.dto.request;
 
+import com.arv.auth.model.enums.HomeBannerSection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,4 +13,5 @@ public class HomeBannerDTO {
     private String name;
     private double percentage;
     private byte[] uInt8List;
+    private HomeBannerSection homeBannerSection = HomeBannerSection.SECTION_1;
 }

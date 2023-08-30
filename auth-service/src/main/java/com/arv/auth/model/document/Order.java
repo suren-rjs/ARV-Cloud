@@ -55,4 +55,8 @@ public class Order {
     @JsonIgnore
     private String accessToken;
     private Address deliveryAddress;
+    private String couponCode;
+    private Double discountedPrice;
+    private Double couponDiscountPercentage;
+    private Double finalPrice;
 }

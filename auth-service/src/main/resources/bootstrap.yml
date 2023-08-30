@@ -3,4 +3,4 @@ spring:
     config:
       uri:
 #        - http://ec2-35-172-119-179.compute-1.amazonaws.com:9196
-        - http://localhost:9196
+        - http://35.244.31.172:9196

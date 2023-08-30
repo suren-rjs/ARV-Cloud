@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface HomeBannerDtoRepository {
     Page<HomeBanner> findAll(Pageable pageable);
+    Page<HomeBanner> searchByName(String name, Pageable pageable);
 
     HomeBanner findById(String id);
 

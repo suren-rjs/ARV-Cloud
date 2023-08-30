@@ -104,7 +104,7 @@ public class OrderService implements OrderDtoRepository {
             ObjectMapper mapper = new ObjectMapper();
             String requestJson;
             try {
-                requestJson = mapper.writeValueAsString(new PreserveStock(cart.getProductId(), cart.getQty()));
+                requestJson = mapper.writeValueAsString(new PreserveStock(cart.getProductId(), cart.getQty(), cart.getVariant()));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -153,7 +153,7 @@ public class OrderService implements OrderDtoRepository {
             ObjectMapper mapper = new ObjectMapper();
             String requestJson;
             try {
-                requestJson = mapper.writeValueAsString(new PreserveStock(cart.getProductId(), cart.getQty()));
+                requestJson = mapper.writeValueAsString(new PreserveStock(cart.getProductId(), cart.getQty(), cart.getVariant()));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
