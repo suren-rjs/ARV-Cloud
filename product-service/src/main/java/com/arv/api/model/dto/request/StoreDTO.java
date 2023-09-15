@@ -1,12 +1,15 @@
 package com.arv.api.model.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
 @Data
-@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class StoreDTO {
     private String id;
     @NotNull
@@ -16,5 +19,6 @@ public class StoreDTO {
     @NotNull
     private String longitude;
     private String locationLink;
+    private Double minDeliveryPrice;
     private String tags;
 }

@@ -2,8 +2,7 @@ package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.dto.request.order.OrderDTO;
-import com.arv.auth.model.enums.PaymentMode;
-import com.arv.auth.model.enums.ReturnStatus;
+import com.arv.auth.model.enums.*;
 import com.arv.auth.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,10 +29,42 @@ public class OrderController {
             return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
-    @GetMapping("/all")
-    private ResponseEntity<?> getAllOrder(@RequestParam(required = false, defaultValue = "0") int page) {
+
+    @GetMapping("/ordersByPaymentStatus")
+    private ResponseEntity<?> ordersByPaymentStatus(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "WAITING_FOR_PAYMENT") PaymentStatus paymentStatus,
+            @RequestParam(required = false, defaultValue = "") String orderId
+//            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false, defaultValue = "") Date fromOrderedDateDate,
+
+    ) {
         try {
-            return globalCommonService.getResponseOfObject(Optional.of(orderService.findAll(page)), HttpStatus.OK);
+//            fromOrderedDateDate = fromOrderedDateDate == null ? new Date(2010, Calendar.JANUARY, 1) : fromOrderedDateDate;
+//            toOrderedDateDate = toOrderedDateDate == null ? new Date() : toOrderedDateDate;
+//            if (fromOrderedDateDate.after(toOrderedDateDate)) {
+//                fromOrderedDateDate = new Date(2010, Calendar.JANUARY, 1);
+//            }
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findByPaymentStatusAndOrderIdContaining(paymentStatus, orderId, page)), HttpStatus.OK);
+        } catch (Exception e) {
+            return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/ordersByOrderStatus")
+    private ResponseEntity<?> ordersByOrderStatus(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "WAITING") OrderStatus orderStatus,
+            @RequestParam(required = false, defaultValue = "") String orderId
+//            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false, defaultValue = "") Date fromOrderedDateDate,
+
+    ) {
+        try {
+//            fromOrderedDateDate = fromOrderedDateDate == null ? new Date(2010, Calendar.JANUARY, 1) : fromOrderedDateDate;
+//            toOrderedDateDate = toOrderedDateDate == null ? new Date() : toOrderedDateDate;
+//            if (fromOrderedDateDate.after(toOrderedDateDate)) {
+//                fromOrderedDateDate = new Date(2010, Calendar.JANUARY, 1);
+//            }
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findByOrderStatusAndOrderIdContaining(orderStatus, orderId, page)), HttpStatus.OK);
         } catch (Exception e) {
             return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
         }

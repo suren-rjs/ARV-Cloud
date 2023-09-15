@@ -10,9 +10,7 @@ import com.arv.auth.model.dto.request.order.OrderList;
 import com.arv.auth.model.dto.request.order.Orders;
 import com.arv.auth.model.dto.response.OrderStatement;
 import com.arv.auth.model.dto.response.ResponseMessage;
-import com.arv.auth.model.enums.OrderStatus;
-import com.arv.auth.model.enums.PaymentMode;
-import com.arv.auth.model.enums.ReturnStatus;
+import com.arv.auth.model.enums.*;
 import com.arv.auth.repository.crud.AddressRepository;
 import com.arv.auth.repository.crud.OrderRepository;
 import com.arv.auth.repository.data.OrderDtoRepository;
@@ -23,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -56,11 +55,23 @@ public class OrderService implements OrderDtoRepository {
     }
 
     @Override
-    public OrderList findAll(int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, 15);
-        Page<Order> page = orderRepository.findAll(pageable);
-        List<Order> list = page.getContent();
-        return new OrderList(list, pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
+    public OrderList findByPaymentStatusAndOrderIdContaining(PaymentStatus paymentStatus, String orderId, int pageNumber) {
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
+        Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
+
+        Page<Order> filteredOrders = orderRepository.findByPaymentStatusAndOrderIdContaining(paymentStatus, orderId, pageable);
+        List<Order> list = filteredOrders.getContent();
+        return new OrderList(list, pageNumber, filteredOrders.getTotalElements(), globalCommonService.getTotalPage(filteredOrders.getTotalPages()));
+    }
+
+    @Override
+    public OrderList findByOrderStatusAndOrderIdContaining(OrderStatus orderStatus, String orderId, int pageNumber) {
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
+        Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
+
+        Page<Order> filteredOrders = orderRepository.findByOrderStatusAndOrderIdContaining(orderStatus, orderId, pageable);
+        List<Order> list = filteredOrders.getContent();
+        return new OrderList(list, pageNumber, filteredOrders.getTotalElements(), globalCommonService.getTotalPage(filteredOrders.getTotalPages()));
     }
 
     @Override
@@ -178,7 +189,7 @@ public class OrderService implements OrderDtoRepository {
         if (!isExistsById(orderId)) throw new RuntimeException("Invalid id");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
-        order.setOrderStatus(OrderStatus.ORDER_PLACED);
+        order.setOrderStatus(OrderStatus.CANCELLED);
         order.setIsCancelledOrder(true);
         orderRepository.save(order);
     }

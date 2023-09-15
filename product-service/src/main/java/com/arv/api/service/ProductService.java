@@ -22,12 +22,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Sort;
 
 @SuppressWarnings("unused")
 @Service
@@ -89,15 +92,18 @@ public class ProductService implements ProductDtoRepository {
     public void deleteById(String id) {
         try {
             getById(id);
-            deleteFile(id);
             productItemRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        try {
+            deleteFile(id);
         } catch (Exception ignored) {
         }
     }
 
     @Override
     public <S extends ProductItem> void updateById(ProductItemDTO updatedDetails) throws Exception {
-        modelMapper.getConfiguration().setAmbiguityIgnored(true);
         try {
             ProductItem productItem = getById(updatedDetails.getId());
             if (productItem == null) throw new Exception("Product not found");
@@ -110,6 +116,10 @@ public class ProductService implements ProductDtoRepository {
             productItem.setStock(updatedDetails.getStock());
             productItem.setDiscount(updatedDetails.getDiscount());
             productItem.setTags(updatedDetails.getTags());
+            productItem.setScannerId(updatedDetails.getScannerId());
+            productItem.setBrand(updatedDetails.getBrand());
+            productItem.setProductVariation(updatedDetails.getProductVariation());
+
 
             String categoryNameOrId = updatedDetails.getCategoryNameOrId();
             String subCategoryNameOrId = updatedDetails.getSubCategoryNameOrId() == null ? categoryNameOrId : updatedDetails.getSubCategoryNameOrId();
@@ -173,6 +183,11 @@ public class ProductService implements ProductDtoRepository {
             productItem.setStock(productItemDTO.getStock());
             productItem.setDiscount(productItemDTO.getDiscount());
             productItem.setTags(productItemDTO.getTags());
+            productItem.setScannerId(productItemDTO.getScannerId());
+            productItem.setBrand(productItemDTO.getBrand());
+            productItem.setProductVariation(productItemDTO.getProductVariation());
+            productItem.setStoreId(productItemDTO.getStoreId());
+            productItem.setMajorCategoryId(productItemDTO.getMajorCategoryId());
 
             String categoryNameOrId = productItemDTO.getCategoryNameOrId();
             String subCategoryNameOrId = productItemDTO.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDTO.getSubCategoryNameOrId();
@@ -186,22 +201,27 @@ public class ProductService implements ProductDtoRepository {
             productItem.setProductCategory(productCategory);
             productItem.setProductSubCategory(productSubCategory);
             productItem.setId(id);
-            if (productItemDTO.getImageFile() != null)
+            if (productItemDTO.getImageFile() != null) {
                 productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), id));
+            }
             return productItem;
         }).iterator();
 
+
+        System.out.println("Product Images Upload Completed");
         productItemRepository.saveAll(iterableProductItems);
+        System.out.println("Product Upload Completed");
     }
 
     @Override
-    public ProductList search(String categoryId, String keyword, double priceFrom, double priceTo, int page) {
-        Pageable pageable = PageRequest.of(page, PAGE_COUNT);
+    public ProductList search(String majorCategory, String categoryId, String subCategoryId, String keyword, double priceFrom, double priceTo, int page) {
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "createdDate");
+        Pageable pageable = PageRequest.of(page, PAGE_COUNT, descendingSort);
         double startPrice = Math.min(priceFrom, priceTo);
         double endPrice = Math.max(priceFrom, priceTo);
         // Perform the repository queries with pagination
-        Page<ProductItem> products = productItemRepository.findByCategoryIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
-                categoryId, keyword, keyword, startPrice, endPrice, startPrice, endPrice, pageable
+        Page<ProductItem> products = productItemRepository.findByMajorCategoryIdAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
+                majorCategory, categoryId, subCategoryId, keyword, keyword, startPrice, endPrice, startPrice, endPrice, pageable
         );
 
         return new ProductList(products.getContent(), page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
@@ -220,18 +240,24 @@ public class ProductService implements ProductDtoRepository {
     }
 
     @Override
-    public void preserveOrder(String id, int qty) {
+    public void preserveOrder(String id, int qty, String variant) {
         ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
-        int afterPreservation = productItem.getStock() - qty;
-        productItem.setStock(afterPreservation);
+        int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), variant);
+        Integer[] stocks = productItem.getStock();
+        int stock = productItem.getStock()[variantIndex];
+        stocks[variantIndex] = stock - qty;
+        productItem.setStock(stocks);
         productItemRepository.save(productItem);
     }
 
     @Override
-    public void unpreserve(String id, int qty) {
+    public void unpreserve(String id, int qty, String variant) {
         ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
-        int afterUnPreservation = productItem.getStock() + qty;
-        productItem.setStock(afterUnPreservation);
+        int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), variant);
+        Integer[] stocks = productItem.getStock();
+        int stock = productItem.getStock()[variantIndex];
+        stocks[variantIndex] = stock + qty;
+        productItem.setStock(stocks);
         productItemRepository.save(productItem);
     }
 
@@ -261,6 +287,7 @@ public class ProductService implements ProductDtoRepository {
     }
 
     private String uploadFile(MultipartFile file, String id) {
+        if(file == null) return "";
         return service.uploadFile(file, id);
     }
 
@@ -282,6 +309,7 @@ public class ProductService implements ProductDtoRepository {
         return new MockMultipartFile(filename, filename, contentType, data);
     }
 
+    @Async
     private void deleteFile(String fileName) {
         service.deleteFile(fileName);
     }

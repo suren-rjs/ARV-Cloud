@@ -20,11 +20,11 @@ public interface ProductDtoRepository {
 
     void saveAll(List<ProductItemDTO> productItemDTOList);
 
-    ProductList search(String categoryId, String keyword, double priceFrom, double priceTo, int page);
+    ProductList search(String majorCategoryId, String categoryId,  String subCategoryId, String keyword, double priceFrom, double priceTo, int page);
 
     ProductList findProductByIdsIn(String[] ids, int page);
 
-    void preserveOrder(String id, int qty);
+    void preserveOrder(String id, int qty, String variant);
 
-    void unpreserve(String id, int qty);
+    void unpreserve(String id, int qty, String variant);
 }

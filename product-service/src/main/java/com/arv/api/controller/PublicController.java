@@ -30,16 +30,24 @@ public class PublicController {
 
     @GetMapping("/products")
     public ResponseEntity<?> getAllProducts(@RequestParam(required = false, defaultValue = "") String categoryId,
+                                            @RequestParam(required = false, defaultValue = "") String majorCategoryId,
+                                            @RequestParam(required = false, defaultValue = "") String subCategoryId,
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(required = false, defaultValue = "0.0") Double priceFrom,
                                             @RequestParam(required = false, defaultValue = "0.0") Double priceTo,
                                             @RequestParam(required = false, defaultValue = "0") int page) {
-        return globalCommonService.getResponseOfObject(Optional.of(productService.search(categoryId, keyword, priceFrom, priceTo, page)), HttpStatus.OK);
+        return globalCommonService.getResponseOfObject(Optional.of(productService.search(majorCategoryId, categoryId, subCategoryId, keyword, priceFrom, priceTo, page)), HttpStatus.OK);
     }
 
     @PostMapping("/list")
-    public ResponseEntity<?> getAllProductsByIds(@RequestBody Products products, @RequestParam(required = false, defaultValue = "0") int page) {
+    public ResponseEntity<?> getAllProductsByIdsWithPage(@RequestBody Products products, @RequestParam(required = false, defaultValue = "0") int page) {
         return globalCommonService.getResponseOfObject(Optional.of(productService.findProductByIdsIn(products.getIds(), page)), HttpStatus.OK);
+    }
+
+    @PostMapping("/listAll")
+    public ResponseEntity<?> getAllProductsByIds(@RequestBody Products products) {
+        List<ProductItem> productsList = productService.findProductByIdsIn(products.getIds());
+        return globalCommonService.getResponseOfObject(Optional.of(productsList), HttpStatus.OK);
     }
 
     @GetMapping("/products/image/{productId}")
@@ -59,10 +67,13 @@ public class PublicController {
             productQuantityMap.put(productId, productQuantityMap.getOrDefault(productId, 0) + quantity);
         });
 
+        int i = 0;
         for (ProductItem productItem : productsList) {
             String productId = productItem.getId();
+            int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), orders.getList().get(i++).getVariant());
+            Double sellingPriceByVarient = productItem.getSellingPrice()[variantIndex];
             int quantity = productQuantityMap.getOrDefault(productId, 0);
-            totalAmount += quantity * productItem.getSellingPrice();
+            totalAmount += quantity * sellingPriceByVarient;
         }
 
         return new ResponseEntity<>(totalAmount, HttpStatus.OK);

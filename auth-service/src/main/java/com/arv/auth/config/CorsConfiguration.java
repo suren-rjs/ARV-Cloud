@@ -13,10 +13,15 @@ public class CorsConfiguration implements WebMvcConfigurer {
     public WebMvcConfigurer corsConfigurer() {
 
         String[] hosts = {
-                "http://35.244.31.172:8090",
-                "http://35.244.31.172:8081",
-                "http://35.244.31.172:8082",
-                "http://35.244.31.172:8000",
+                "http://35.244.33.213:8090",
+                "http://35.244.33.213:8081",
+                "http://35.244.33.213:8082",
+                "http://35.244.33.213:8000",
+                "http://85.31.233.21:8090",
+                "http://85.31.233.21:8081",
+                "http://85.31.233.21:8082",
+                "http://85.31.233.21:8000",
+                "http://localhost:8082",
         };
         return new WebMvcConfigurer() {
             @Override

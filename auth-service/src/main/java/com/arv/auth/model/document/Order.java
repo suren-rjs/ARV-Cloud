@@ -10,6 +10,8 @@ import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.util.Date;
 import java.util.List;
@@ -21,13 +23,15 @@ import java.util.List;
 public class Order {
     @Id
     private String id;
+    @JsonIgnore
+    private String orderId;
     @Indexed
     private String paymentId;
     @NonNull
     private String userId;
     @NonNull
     private List<CartDto> orderItems;
-    private PaymentStatus paymentStatus;
+    private PaymentStatus paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT;
     @Indexed
     private OrderStatus orderStatus = OrderStatus.WAITING;
     @Indexed
@@ -35,16 +39,20 @@ public class Order {
     @Indexed
     private CancellationStatus cancellationStatus;
     @Indexed
-    private PaymentMode paymentMode = PaymentMode.WALLET;
+    private PaymentMode paymentMode = PaymentMode.COD;
     @Indexed
     private String cancellationReason;
     @Indexed
     private Boolean isCancelledOrder = false;
     @Indexed
     private Boolean isReturnOrder = false;
+    @Field(targetType = FieldType.STRING)
     private Date orderedDate;
+    @Field(targetType = FieldType.STRING)
     private Date placedDate;
+    @Field(targetType = FieldType.STRING)
     private Date expectedDeliveryDate;
+    @Field(targetType = FieldType.STRING)
     private Date deliveredDate;
     private Double orderValue;
     private Double deliveryCharge;

@@ -30,10 +30,10 @@ public class HomeBannerController {
     protected GlobalCommonService globalCommonService;
 
     @GetMapping("/all")
-    private ResponseEntity<?> getAll(@RequestParam(required = false, defaultValue = "0") int page) {
+    private ResponseEntity<?> getAll(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "") String keyword) {
         Pageable pageable = PageRequest.of(page, PAGE_COUNT);
-        Page<HomeBanner> banners = homeBannerService.findAll(pageable);
-        return globalCommonService.getResponseOfObject(Optional.of(new BannerList(banners.getContent(), page, globalCommonService.getTotalPage(banners.getTotalPages()), banners.getNumberOfElements())), HttpStatus.OK);
+        Page<HomeBanner> banners = homeBannerService.searchByNameContainingIgnoreCase(keyword, pageable);
+        return globalCommonService.getResponseOfObject(Optional.of(new BannerList(banners.getContent(), page, banners.getNumberOfElements(), globalCommonService.getTotalPage(banners.getTotalPages()))), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

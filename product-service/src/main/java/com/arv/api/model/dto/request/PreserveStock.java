@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PreserveStock {
     private String productId;
+    private String variant;
     private int qty;
 }

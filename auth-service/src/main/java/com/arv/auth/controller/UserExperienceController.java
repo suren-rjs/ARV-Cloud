@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,12 @@ public class UserExperienceController {
     @PostMapping("/view/{id}")
     public ResponseEntity<?> productView(@PathVariable String id) {
         User user = globalCommonService.getCurrentUser();
-        List<String> views = user.getRecentViews();
+        List<String> views;
+        try {
+            views = user.getRecentViews();
+        } catch (Exception e) {
+            views = new ArrayList<>();
+        }
         MostRecent mostRecent = new MostRecent(views, viewsCount);
         mostRecent.addElement(id);
         user.setRecentViews(mostRecent.getRecentElements());
@@ -42,11 +48,15 @@ public class UserExperienceController {
         return globalCommonService.getResponseEntityByMessageAndStatus("product view recorded", HttpStatus.OK);
     }
 
-    @PostMapping("/recent")
+    @GetMapping("/recent")
     public ResponseEntity<?> getRecent(@RequestParam(required = false, defaultValue = "true") Boolean isRecentViews) throws JsonProcessingException {
         User user = globalCommonService.getCurrentUser();
-        String[] productIds = (isRecentViews ? user.getRecentViews() : user.getRecentWishLists()).toArray(new String[0]);
-
+        String[] productIds;
+        try {
+            productIds = (isRecentViews ? user.getRecentViews() : user.getRecentWishLists()).toArray(new String[0]);
+        } catch (Exception e) {
+            productIds = new String[]{};
+        }
         String uriWithParams = gatewayUrl + "/public/list?page=0";
 
         HttpHeaders headers = new HttpHeaders();

@@ -26,5 +26,6 @@ public class StoreInfo {
     @NotNull
     private String longitude;
     private String locationLink;
+    private Double minDeliveryPrice;
     private String tags;
 }

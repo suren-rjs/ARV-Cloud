@@ -119,4 +119,13 @@ public class GlobalCommonService {
         totalPage = totalPage <= 1 ? 0 : (totalPage - 1);
         return totalPage;
     }
+
+    public int findIndex(String[] array, String value) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equals(value)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }

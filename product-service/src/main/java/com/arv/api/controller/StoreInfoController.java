@@ -16,10 +16,10 @@ import java.util.Optional;
 @RequestMapping(value = "/store", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StoreInfoController {
     @Autowired
-    protected StoreService storeService;
+    private StoreService storeService;
 
     @Autowired
-    protected GlobalCommonService globalCommonService;
+    private GlobalCommonService globalCommonService;
 
     @PostMapping
     public ResponseEntity<?> addStoreInfo(@RequestBody StoreDTO storeInfo) {
@@ -39,6 +39,12 @@ public class StoreInfoController {
         }
 
         return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @GetMapping("/deliveryPrice")
+    public ResponseEntity<?> getDeliveryPrice(@RequestParam(defaultValue = "") String locationId) {
+        // TODO: Delivery Price Calculation implementation
+        throw new RuntimeException("Unimplemented method");
     }
 
     @DeleteMapping("/{id}")

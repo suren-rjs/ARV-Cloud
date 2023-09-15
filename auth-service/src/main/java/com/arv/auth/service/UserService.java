@@ -66,6 +66,8 @@ public class UserService implements UserDtoRepository, UserDetailsService {
         }
 
         user.setRoles(roles);
+        user.setRecentViews(new ArrayList<>());
+        user.setRecentWishLists(new ArrayList<>());
         userRepository.save(user);
     }
 

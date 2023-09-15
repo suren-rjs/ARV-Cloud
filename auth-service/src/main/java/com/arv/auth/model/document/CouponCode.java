@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document("banner")
+@Document("coupons")
 public class CouponCode {
     @Id
     private String id;
@@ -19,12 +19,12 @@ public class CouponCode {
     @Indexed
     private String couponCode;
     @NonNull
-    private Double discountPercentage;
+    private Double discountPercentage = 0.0;
     @NonNull
     @Indexed
-    private Double minOrderPrice;
+    private Double minOrderPrice = 0.0;
     @NonNull
-    private Double maxDiscountPrice;
-    private int maxUsage;
+    private Double maxDiscountPrice = 0.0;
+    private int maxUsage = 0;
 }
 

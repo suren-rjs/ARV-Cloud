@@ -1,16 +1,23 @@
 spring:
-#  zipkin:
+  cors:
+    allowed-origins: "*"
+    allowed-methods: "*"
+    allowed-headers: "*"
+    allow-credentials: false
+    max-age: 3600
+
+  #  zipkin:
 #    base-url: http://localhost:9411/
   application:
     name: ARV-PRODUCT-SERVICE
   servlet:
     multipart:
       enabled: true
-      file-size-threshold: 2MB
-      max-file-size: 5MB
-      max-request-size: 10MB
-#logging:
-#  file: ~/logs/product-service.log
+      file-size-threshold: 3MB
+      max-file-size: 500MB
+      max-request-size: 500MB
+logging:
+  file: ../logs/product-service.log
 
 eureka:
   client:
@@ -18,9 +25,9 @@ eureka:
     fetch-registry: true
     service-url:
       #      defaultZone: http://ec2-16-171-32-172.eu-north-1.compute.amazonaws.com:8761/eureka
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://85.31.233.21:8761/eureka
   instance:
-    hostname: localhost
+    hostname: 85.31.233.21
 
 cloud:
   aws:

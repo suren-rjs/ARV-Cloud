@@ -3,6 +3,7 @@ package com.arv.auth.service;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.HomeBanner;
 import com.arv.auth.model.dto.request.HomeBannerDTO;
+import com.arv.auth.model.enums.HomeBannerSection;
 import com.arv.auth.repository.crud.HomeBannerRepository;
 import com.arv.auth.repository.data.HomeBannerDtoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,12 @@ public class HomeBannerService implements HomeBannerDtoRepository {
     }
 
     @Override
-    public Page<HomeBanner> searchByName(String name, Pageable pageable) {
+    public Page<HomeBanner> searchByNameAndBanner(HomeBannerSection section, String name, Pageable pageable) {
+        return homeBannerRepository.findByHomeBannerSectionAndNameContainingIgnoreCase(section, name, pageable);
+    }
+
+    @Override
+    public Page<HomeBanner> searchByNameContainingIgnoreCase(String name, Pageable pageable) {
         return homeBannerRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 

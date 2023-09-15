@@ -4,28 +4,35 @@ import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.dto.request.cart.CartDto;
+import com.arv.auth.model.dto.response.CartItem;
+import com.arv.auth.model.dto.response.CartItemsList;
 import com.arv.auth.repository.crud.CartRepository;
 import com.arv.auth.repository.data.CartDtoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService implements CartDtoRepository {
     @Autowired
-    private GlobalCommonService globalCommonService;
+    protected GlobalCommonService globalCommonService;
 
     @Autowired
-    private CartRepository cartRepository;
+    protected CartRepository cartRepository;
 
     @Override
     public void save(CartDto cartDto) {
         User user = globalCommonService.getCurrentUser();
         Cart item = (Cart) globalCommonService.convertObject(cartDto, Cart.class);
         item.setUserId(user.getId());
-        if (cartRepository.existsByProductIdAndUserId(cartDto.getProductId(), user.getId()))
-            throw new RuntimeException("Item already exist!");
+
+        if (cartRepository.existsByProductIdAndUserId(cartDto.getProductId(), user.getId())) {
+            item = cartRepository.findByProductIdAndUserId(cartDto.getProductId(), user.getId());
+            item.setQty(cartDto.getQty());
+        }
+
         cartRepository.save(item);
     }
 
@@ -36,9 +43,18 @@ public class CartService implements CartDtoRepository {
     }
 
     @Override
+    public CartItemsList findAllAndCount() {
+        List<Cart> allItems = findAll();
+        List<CartItem> cartList = allItems.stream().map(cart -> new CartItem(cart.getProductId(), cart.getQty())).collect(Collectors.toList());
+
+        return new CartItemsList(cartList, cartList.size());
+    }
+
+    @Override
     public void delete(String id) {
         User user = globalCommonService.getCurrentUser();
-        cartRepository.deleteByIdAndUserId(id, user.getId());
+        Cart cart = cartRepository.findByProductIdAndUserId(id, user.getId());
+        cartRepository.delete(cart);
     }
 
     @Override

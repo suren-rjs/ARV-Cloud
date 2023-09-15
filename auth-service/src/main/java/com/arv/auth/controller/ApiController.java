@@ -5,6 +5,7 @@ import com.arv.auth.model.document.CouponCode;
 import com.arv.auth.model.document.HomeBanner;
 import com.arv.auth.model.document.Order;
 import com.arv.auth.model.dto.response.BannerList;
+import com.arv.auth.model.enums.HomeBannerSection;
 import com.arv.auth.repository.crud.OrderRepository;
 import com.arv.auth.service.CouponCodeService;
 import com.arv.auth.service.HomeBannerService;
@@ -40,17 +41,10 @@ public class ApiController {
     protected OrderRepository orderRepository;
 
     @GetMapping("/homeBanners")
-    protected ResponseEntity<?> getHomeBanners(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false) String searchName) {
+    protected ResponseEntity<?> getHomeBanners(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "") String searchName, @RequestParam(required = false, defaultValue = "SECTION_1") HomeBannerSection homeBannerSection) {
         Pageable pageable = PageRequest.of(page, PAGE_COUNT);
-        Page<HomeBanner> banners;
-
-        if (searchName != null && !searchName.isEmpty()) {
-            banners = homeBannerService.searchByName(searchName, pageable);
-        } else {
-            banners = homeBannerService.findAll(pageable);
-        }
-
-        return globalCommonService.getResponseOfObject(Optional.of(new BannerList(banners.getContent(), page, globalCommonService.getTotalPage(banners.getTotalPages()), banners.getNumberOfElements())), HttpStatus.OK);
+        Page<HomeBanner> banners = homeBannerService.searchByNameAndBanner(homeBannerSection, searchName, pageable);
+        return globalCommonService.getResponseOfObject(Optional.of(new BannerList(banners.getContent(), page, banners.getNumberOfElements(), globalCommonService.getTotalPage(banners.getTotalPages()))), HttpStatus.OK);
     }
 
     @PostMapping("/applyCouponCode")

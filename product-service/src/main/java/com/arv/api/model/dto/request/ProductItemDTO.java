@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.redis.core.index.Indexed;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @Data
 @ToString
@@ -20,7 +22,7 @@ import javax.validation.constraints.NotNull;
 public class ProductItemDTO {
     @NotNull
     private String storeId;
-
+    @Indexed
     private String majorCategoryId;
 
     @Field("Id")
@@ -30,6 +32,8 @@ public class ProductItemDTO {
     private String productName;
 
     private String description;
+    private String scannerId;
+    private String brand;
 
     @NotNull
     @Field("categoryId")
@@ -48,16 +52,17 @@ public class ProductItemDTO {
     @JsonIgnore
     private ProductSubCategory productSubCategory;
 
-    private String productVariation;
-    private Double mrpPrice;
-    private Double sellingPrice;
-    private Integer quantity;
-    private Integer stock;
+    private String[] productVariation;
+    private Double[] mrpPrice;
+    private Double[] sellingPrice;
+    private Integer[] quantity;
+    private Integer[] stock;
     private Double discount;
     private String tags;
 
     private byte[] image;
     private MultipartFile imageFile;
+    private Date createdDate = new Date();
 
     public String getCategoryId() {
         return this.productCategory.getId();

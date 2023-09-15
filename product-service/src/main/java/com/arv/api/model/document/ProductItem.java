@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -29,6 +30,9 @@ public class ProductItem {
     @UniqueElements
     private String productName;
     private String description;
+    private String scannerId;
+    @Indexed
+    private String brand;
     @NotNull
     @Indexed
     private String categoryId;
@@ -41,14 +45,14 @@ public class ProductItem {
     @DBRef
     private ProductSubCategory productSubCategory;
     @Indexed
-    private String productVariation;
+    private String[] productVariation;
     @Indexed
-    private Double mrpPrice;
+    private Double[] mrpPrice;
     @Indexed
-    private Double sellingPrice;
-    private Integer quantity;
+    private Double[] sellingPrice;
+    private Integer[] quantity;
     @Indexed
-    private Integer stock;
+    private Integer[] stock;
     @Indexed
     private Double discount;
     private String tags;
@@ -59,4 +63,5 @@ public class ProductItem {
     private String categoryNameOrId;
     @JsonIgnore
     private String subCategoryNameOrId;
+    private Date createdDate = new Date();
 }

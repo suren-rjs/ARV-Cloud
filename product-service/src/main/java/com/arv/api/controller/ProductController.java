@@ -44,7 +44,9 @@ public class ProductController {
             MultipartFile xmlFile = request.getFile("xmlFile");
             List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId, majorCategoryId);
             try {
+                System.out.println("Conversion completed");
                 productService.saveAll(productItemDTOList);
+                System.out.println("Uploaded ... ");
             } catch (Exception e) {
                 System.out.println("Exception is : "+e.getMessage());
                 return globalCommonService.getResponseEntityByMessageAndStatus("Exception while save : " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
@@ -52,6 +54,7 @@ public class ProductController {
 
             return globalCommonService.getResponseEntityByMessageAndStatus("Products Uploaded successfully!", HttpStatus.CREATED);
         } catch (Exception e) {
+            System.out.println("Exception is "+e.getMessage());
             return globalCommonService.getResponseEntityByMessageAndStatus("Unable to upload " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
         }
     }
@@ -77,7 +80,7 @@ public class ProductController {
         try {
             productService.deleteById(id);
         } catch (Exception e) {
-            message = "invalid id";
+            message = e.getMessage();
             response = HttpStatus.NOT_ACCEPTABLE;
         }
 
@@ -104,7 +107,7 @@ public class ProductController {
         HttpStatus response = HttpStatus.OK;
         try {
             message = "Stock preserved for order!";
-            productService.preserveOrder(preserveStock.getProductId(), preserveStock.getQty());
+            productService.preserveOrder(preserveStock.getProductId(), preserveStock.getQty(), preserveStock.getVariant());
         } catch (Exception e) {
             message = "Unable to preerve product quantity";
             response = HttpStatus.NOT_ACCEPTABLE;
@@ -119,7 +122,7 @@ public class ProductController {
         HttpStatus response = HttpStatus.OK;
         try {
             message = "Restock successfully added!";
-            productService.unpreserve(preserveStock.getProductId(), preserveStock.getQty());
+            productService.unpreserve(preserveStock.getProductId(), preserveStock.getQty(), preserveStock.getVariant());
         } catch (Exception e) {
             message = "Unable to restock product quantity";
             response = HttpStatus.NOT_ACCEPTABLE;
