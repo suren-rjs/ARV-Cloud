@@ -21,4 +21,5 @@ public class ProductSubCategory {
     private String categoryId;
     @NotNull
     private String name;
+    private String image;
 }

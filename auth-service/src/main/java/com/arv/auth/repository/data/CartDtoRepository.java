@@ -11,6 +11,7 @@ public interface CartDtoRepository {
 
     List<Cart> findAll();
     CartItemsList findAllAndCount();
+    int findCountById(String productId);
 
     void delete(String id);
 

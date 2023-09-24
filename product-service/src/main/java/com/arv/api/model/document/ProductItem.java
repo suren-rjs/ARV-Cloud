@@ -1,5 +1,6 @@
 package com.arv.api.model.document;
 
+import com.arv.api.model.dto.response.ProductVariant;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +10,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Data
@@ -64,4 +67,34 @@ public class ProductItem {
     @JsonIgnore
     private String subCategoryNameOrId;
     private Date createdDate = new Date();
+    @Field("productVariants")
+    private ArrayList<ProductVariant> productVariants;
+    @Indexed
+    private String color;
+    @Indexed
+    private String size;
+
+    public ArrayList<ProductVariant> getProductVariants() {
+        String[] variants = this.getProductVariation();
+        Double[] prices = this.getSellingPrice();
+        Integer[] quantities = this.getQuantity();
+        ArrayList<ProductVariant> variantsList = new ArrayList<>();
+        for (int i = 0; i < variants.length; i++) {
+            String variant = variants[i];
+            Double price;
+            Integer quantity;
+            try {
+                price = prices[i];
+            } catch (Exception e) {
+                price = 0.0;
+            }
+            try {
+                quantity = quantities[i];
+            } catch (Exception e) {
+                quantity = 0;
+            }
+            variantsList.add(new ProductVariant(variant, price, quantity));
+        }
+        return variantsList;
+    }
 }

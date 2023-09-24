@@ -4,7 +4,9 @@ import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.document.ProductSubCategory;
+import com.arv.api.model.dto.request.PriceRequest;
 import com.arv.api.model.dto.request.ProductItemDTO;
+import com.arv.api.model.dto.request.ProductSubCategoryDTO;
 import com.arv.api.model.dto.response.ProductList;
 import com.arv.api.repository.crud.ProductItemRepository;
 import com.arv.api.repository.data.ProductDtoRepository;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,6 +69,7 @@ public class ProductService implements ProductDtoRepository {
         productItem.setStock(productItemDto.getStock());
         productItem.setDiscount(productItemDto.getDiscount());
         productItem.setTags(productItemDto.getTags());
+        productItem.setScannerId(productItemDto.getScannerId());
 
         String categoryNameOrId = productItemDto.getCategoryNameOrId();
         String subCategoryNameOrId = productItemDto.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDto.getSubCategoryNameOrId();
@@ -171,7 +175,7 @@ public class ProductService implements ProductDtoRepository {
         }
 
         Iterable<ProductItem> iterableProductItems = () -> productItemDTOList.stream().map(productItemDTO -> {
-            String id = productItemDTO.getStoreId() + productItemDTO.getProductName().toLowerCase().replaceAll(" ", "-");
+            String id = productItemDTO.getStoreId() + "-" + productItemDTO.getProductName().toLowerCase().replaceAll(" ", "-");
 
             ProductItem productItem = new ProductItem();
             productItem.setProductName(productItemDTO.getProductName());
@@ -201,6 +205,7 @@ public class ProductService implements ProductDtoRepository {
             productItem.setProductCategory(productCategory);
             productItem.setProductSubCategory(productSubCategory);
             productItem.setId(id);
+            productItem.setProductVariants(productItemDTO.getProductVariants());
             if (productItemDTO.getImageFile() != null) {
                 productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), id));
             }
@@ -214,14 +219,14 @@ public class ProductService implements ProductDtoRepository {
     }
 
     @Override
-    public ProductList search(String majorCategory, String categoryId, String subCategoryId, String keyword, double priceFrom, double priceTo, int page) {
+    public ProductList search(String majorCategory, String categoryId, String subCategoryId, String storeId, String keyword, double priceFrom, double priceTo, int page) {
         Sort descendingSort = Sort.by(Sort.Direction.DESC, "createdDate");
         Pageable pageable = PageRequest.of(page, PAGE_COUNT, descendingSort);
         double startPrice = Math.min(priceFrom, priceTo);
         double endPrice = Math.max(priceFrom, priceTo);
         // Perform the repository queries with pagination
-        Page<ProductItem> products = productItemRepository.findByMajorCategoryIdAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
-                majorCategory, categoryId, subCategoryId, keyword, keyword, startPrice, endPrice, startPrice, endPrice, pageable
+        Page<ProductItem> products = productItemRepository.findByMajorCategoryIdAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndStoreIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
+                majorCategory, categoryId, subCategoryId, storeId, keyword, keyword, startPrice, endPrice, startPrice, endPrice, pageable
         );
 
         return new ProductList(products.getContent(), page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
@@ -251,7 +256,7 @@ public class ProductService implements ProductDtoRepository {
     }
 
     @Override
-    public void unpreserve(String id, int qty, String variant) {
+    public void unPreserve(String id, int qty, String variant) {
         ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
         int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), variant);
         Integer[] stocks = productItem.getStock();
@@ -261,8 +266,19 @@ public class ProductService implements ProductDtoRepository {
         productItemRepository.save(productItem);
     }
 
+    @Override
+    public Double getProductPriceByVariant(PriceRequest priceRequest) {
+        ProductItem productItem = productItemRepository.findOneById(priceRequest.getProductId()).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
+        int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), priceRequest.getVariant());
+        Double[] prices = productItem.getSellingPrice();
+        return prices[variantIndex];
+    }
+
     private ProductCategory getCategoryId(String nameOrId) {
         Optional<ProductCategory> productCategory = productCategoryService.findOneCategoryByNameOrId(nameOrId);
+        if (Arrays.asList(null, "", "-").contains(nameOrId)) {
+            productCategory = productCategoryService.getOneCategoryById("650b492f7c36ab5ea4fc4cf2");
+        }
 
         if (productCategory.isPresent()) return productCategory.get();
 
@@ -280,14 +296,14 @@ public class ProductService implements ProductDtoRepository {
 
         if (productSubCategories.isPresent()) return productSubCategories.get();
 
-        ProductSubCategory subCategory = new ProductSubCategory();
+        ProductSubCategoryDTO subCategory = new ProductSubCategoryDTO();
         subCategory.setName(nameOrId);
         subCategory.setCategoryId(categoryId);
         return productCategoryService.saveSubCategories(subCategory);
     }
 
     private String uploadFile(MultipartFile file, String id) {
-        if(file == null) return "";
+        if (file == null) return "";
         return service.uploadFile(file, id);
     }
 

@@ -2,6 +2,7 @@ package com.arv.api.model.dto.request;
 
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductSubCategory;
+import com.arv.api.model.dto.response.ProductVariant;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,7 @@ import org.springframework.data.redis.core.index.Indexed;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Data
@@ -63,6 +65,10 @@ public class ProductItemDTO {
     private byte[] image;
     private MultipartFile imageFile;
     private Date createdDate = new Date();
+    @Field("productVariants")
+    private ArrayList<ProductVariant> productVariants;
+    private String color;
+    private String size;
 
     public String getCategoryId() {
         return this.productCategory.getId();
@@ -70,5 +76,30 @@ public class ProductItemDTO {
 
     public String getSubCategoryId() {
         return this.productSubCategory.getId();
+    }
+
+
+    public ArrayList<ProductVariant> getProductVariants() {
+        String[] variants = this.getProductVariation();
+        Double[] prices = this.getSellingPrice();
+        Integer[] quantities = this.getQuantity();
+        ArrayList<ProductVariant> variantsList = new ArrayList<>();
+        for (int i = 0; i < variants.length; i++) {
+            String variant = variants[i];
+            Double price = 0.0;
+            Integer quantity = 0;
+            try {
+                price = prices[i];
+            } catch (Exception e) {
+                price = 0.0;
+            }
+            try {
+                quantity = quantities[i];
+            } catch (Exception e) {
+                quantity = 0;
+            }
+            variantsList.add(new ProductVariant(variant, price, quantity));
+        }
+        return variantsList;
     }
 }

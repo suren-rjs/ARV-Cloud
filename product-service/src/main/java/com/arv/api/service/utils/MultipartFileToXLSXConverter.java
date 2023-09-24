@@ -88,12 +88,12 @@ public class MultipartFileToXLSXConverter {
         for (Row row : sheet) {
             if (row.getCell(0).getCellType() == CellType.BLANK || row.getRowNum() == 0) continue;
             String name = row.getCell(0).getStringCellValue();
-            String scannerId = getStringValueByIndex(row, 1, "-");
+            String scannerId = (String) getValueByIndex(row, 1, true);
             String brand = getStringValueByIndex(row, 2, "-");
             String description = getStringValueByIndex(row, 3, "-");
-            String category = row.getCell(5).getStringCellValue();
-            String categoryTag = getStringValueByIndex(row, 6, category);
-            String subCategory = getStringValueByIndex(row, 6, category);
+            String category = row.getCell(6).getStringCellValue();
+            String categoryTag = getStringValueByIndex(row, 5, category);
+            String subCategory = getStringValueByIndex(row, 5, category);
 
             String[] productVariation;
             try {
@@ -105,7 +105,7 @@ public class MultipartFileToXLSXConverter {
             Double[] mrpPrice = getDoubleListByIndex(row, 7);
             Double[] sellingPrice = getDoubleListByIndex(row, 8);
 
-            Double discount = (Double) getValueByIndex(row, 9);
+            Double discount = (Double) getValueByIndex(row, 9, false);
 
             Integer[] stock = getIntListByIndex(row, 11);
             String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll(" ", "-");
@@ -168,9 +168,11 @@ public class MultipartFileToXLSXConverter {
         }
     }
 
-    private Object getValueByIndex(Row row, int index) {
+    private Object getValueByIndex(Row row, int index, boolean isString) {
+        Object object;
         try {
-            return row.getCell(index).getNumericCellValue();
+            object = row.getCell(index).getNumericCellValue();
+            return isString ? object + "" : object;
         } catch (Exception e) {
             return 0.0;
         }

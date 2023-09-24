@@ -32,8 +32,8 @@ eureka:
 cloud:
   aws:
     credentials:
-      access-key: AKIAY5P7AGA4RA7CDGEP
-      secret-key: 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
+      access-key: AKIA2KE7J7V6ZF6KTFN6
+      secret-key: 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
     region:
       static: ap-south-1
     stack:
@@ -41,4 +41,4 @@ cloud:
 
 application:
   bucket:
-    name: arv-cloud-bucket
+    name: arv-exclusive-bucket

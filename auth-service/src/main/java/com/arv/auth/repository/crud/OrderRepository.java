@@ -24,9 +24,14 @@ public interface OrderRepository extends MongoRepository<Order, String> {
             Pageable pageable
     );
 
-    Page<Order> findByOrderStatusAndOrderIdContaining(
+    Page<Order> findAllByOrderStatusAndOrderIdContainingIgnoreCase(
             OrderStatus orderStatus,
             String orderId,
+            Pageable pageable
+    );
+
+    Page<Order> findAllByOrderStatus(
+            OrderStatus orderStatus,
             Pageable pageable
     );
 

@@ -49,6 +49,9 @@ public class HomeBannerService implements HomeBannerDtoRepository {
         homeBanner.setPercentage(homeBannerDTO.getPercentage());
         homeBanner.setName(homeBannerDTO.getName());
         homeBanner.setHomeBannerSection(homeBannerDTO.getHomeBannerSection());
+        homeBanner.setMajorCategory(homeBannerDTO.getMajorCategory());
+        homeBanner.setCategoryId(homeBannerDTO.getCategoryId());
+        homeBanner.setSubCategoryId(homeBanner.getSubCategoryId());
         homeBanner = homeBannerRepository.save(homeBanner);
         homeBanner.setImageUri(uploadFile(convertBytesToMux(homeBannerDTO.getUInt8List(), "banner-" + homeBanner.getId() + ".jpeg", "image/jpeg"), "banner-" + homeBanner.getId()));
 
@@ -57,8 +60,8 @@ public class HomeBannerService implements HomeBannerDtoRepository {
 
     @Override
     public void delete(String id) {
-        deleteFile(id);
         homeBannerRepository.deleteById(id);
+        deleteFile(id);
     }
 
     @Override
@@ -69,6 +72,9 @@ public class HomeBannerService implements HomeBannerDtoRepository {
         }
         homeBanner.setName(homeBannerDTO.getName());
         homeBanner.setPercentage(homeBannerDTO.getPercentage());
+        homeBanner.setMajorCategory(homeBannerDTO.getMajorCategory());
+        homeBanner.setCategoryId(homeBannerDTO.getCategoryId());
+        homeBanner.setSubCategoryId(homeBanner.getSubCategoryId());
         return homeBannerRepository.save(homeBanner);
     }
 

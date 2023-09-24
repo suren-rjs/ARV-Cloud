@@ -4,6 +4,7 @@ import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.dto.request.cart.CartDto;
 import com.arv.auth.model.dto.response.CartItemsList;
+import com.arv.auth.model.dto.response.Count;
 import com.arv.auth.model.dto.response.Total;
 import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.model.rest.ProductList;
@@ -108,6 +109,12 @@ public class CartController {
     private ResponseEntity<?> getCartCount() {
         CartItemsList cartItemsList = cartService.findAllAndCount();
         return globalCommonService.getResponseOfObject(Optional.of(cartItemsList), HttpStatus.OK);
+    }
+
+    @GetMapping("/cartCount")
+    private ResponseEntity<?> getCartItemCountById(@RequestParam(defaultValue = "") String productId) {
+        Count itemCount = new Count(cartService.findCountById(productId));
+        return globalCommonService.getResponseOfObject(Optional.of(itemCount), HttpStatus.OK);
     }
 
     @PostMapping

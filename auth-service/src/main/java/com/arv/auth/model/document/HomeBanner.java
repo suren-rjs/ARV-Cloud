@@ -19,6 +19,9 @@ public class HomeBanner {
     @Indexed
     private String name;
     private String imageUri;
+    private String majorCategory;
+    private String categoryId;
+    private String subCategoryId;
     @Indexed
     private HomeBannerSection homeBannerSection = HomeBannerSection.SECTION_1;
 }

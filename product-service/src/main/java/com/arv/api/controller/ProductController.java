@@ -42,19 +42,20 @@ public class ProductController {
             String storeId = request.getParameter("storeId");
             String majorCategoryId = request.getParameter("majorCategoryId");
             MultipartFile xmlFile = request.getFile("xmlFile");
+            System.out.println("majorCategory Id : " + majorCategoryId);
             List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId, majorCategoryId);
             try {
                 System.out.println("Conversion completed");
                 productService.saveAll(productItemDTOList);
                 System.out.println("Uploaded ... ");
             } catch (Exception e) {
-                System.out.println("Exception is : "+e.getMessage());
+                System.out.println("Exception is : " + e.getMessage());
                 return globalCommonService.getResponseEntityByMessageAndStatus("Exception while save : " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
             }
 
             return globalCommonService.getResponseEntityByMessageAndStatus("Products Uploaded successfully!", HttpStatus.CREATED);
         } catch (Exception e) {
-            System.out.println("Exception is "+e.getMessage());
+            System.out.println("Exception is " + e.getMessage());
             return globalCommonService.getResponseEntityByMessageAndStatus("Unable to upload " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
         }
     }
@@ -122,7 +123,7 @@ public class ProductController {
         HttpStatus response = HttpStatus.OK;
         try {
             message = "Restock successfully added!";
-            productService.unpreserve(preserveStock.getProductId(), preserveStock.getQty(), preserveStock.getVariant());
+            productService.unPreserve(preserveStock.getProductId(), preserveStock.getQty(), preserveStock.getVariant());
         } catch (Exception e) {
             message = "Unable to restock product quantity";
             response = HttpStatus.NOT_ACCEPTABLE;

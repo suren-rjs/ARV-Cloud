@@ -11,6 +11,7 @@ import com.arv.auth.model.dto.request.order.Orders;
 import com.arv.auth.model.dto.response.OrderStatement;
 import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.model.enums.*;
+import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.repository.crud.AddressRepository;
 import com.arv.auth.repository.crud.OrderRepository;
 import com.arv.auth.repository.data.OrderDtoRepository;
@@ -30,6 +31,7 @@ import org.webjars.NotFoundException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrderService implements OrderDtoRepository {
@@ -68,8 +70,12 @@ public class OrderService implements OrderDtoRepository {
     public OrderList findByOrderStatusAndOrderIdContaining(OrderStatus orderStatus, String orderId, int pageNumber) {
         Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
         Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
-
-        Page<Order> filteredOrders = orderRepository.findByOrderStatusAndOrderIdContaining(orderStatus, orderId, pageable);
+        Page<Order> filteredOrders;
+        if (Objects.equals(orderId, "")) {
+            filteredOrders = orderRepository.findAllByOrderStatus(orderStatus, pageable);
+        } else {
+            filteredOrders = orderRepository.findAllByOrderStatusAndOrderIdContainingIgnoreCase(orderStatus, orderId, pageable);
+        }
         List<Order> list = filteredOrders.getContent();
         return new OrderList(list, pageNumber, filteredOrders.getTotalElements(), globalCommonService.getTotalPage(filteredOrders.getTotalPages()));
     }
@@ -91,6 +97,14 @@ public class OrderService implements OrderDtoRepository {
         String userId = globalCommonService.getCurrentUser().getId();
         Address deliveryAddress = addressRepository.findOneByIdAndUserId(orderDTO.getAddressId(), userId).orElseThrow(() -> new NotFoundException("Invalid address id"));
         Order order = (Order) globalCommonService.convertObject(orderDTO, Order.class);
+        if (orderDTO.getPaymentMode() == PaymentMode.COD) {
+            order.getOrderItems().forEach(cartDto -> {
+                ProductItem productItem = (ProductItem) globalCommonService.getForObject(GATEWAY + "/products/" + cartDto.getProductId(), ProductItem.class);
+                int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), cartDto.getVariant());
+                Double price = productItem.getSellingPrice()[variantIndex];
+                cartDto.setOrderPrice(price);
+            });
+        }
         order.setDeliveryAddress(deliveryAddress);
         order.setUserId(userId);
         order.setOrderedDate(new Date());
@@ -149,7 +163,8 @@ public class OrderService implements OrderDtoRepository {
         }
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
         OrderStatement orderStatement = (OrderStatement) globalCommonService.postForObject(GATEWAY + "/public/getStatment", entity, OrderStatement.class);
-        order.setTotalAmount(orderStatement.getTotalAmount());
+        order.setOrderValue(orderStatement.getTotalAmount());
+        order.setTotalAmount(orderStatement.getTotalAmount() + order.getDeliveryCharge() - order.getDiscountedPrice());
         return order;
     }
 

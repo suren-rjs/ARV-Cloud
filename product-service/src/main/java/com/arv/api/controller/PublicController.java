@@ -4,7 +4,9 @@ import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductItem;
 import com.arv.api.model.dto.request.CartDto;
 import com.arv.api.model.dto.request.Orders;
+import com.arv.api.model.dto.request.PriceRequest;
 import com.arv.api.model.dto.request.Products;
+import com.arv.api.model.dto.response.Price;
 import com.arv.api.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,11 +34,12 @@ public class PublicController {
     public ResponseEntity<?> getAllProducts(@RequestParam(required = false, defaultValue = "") String categoryId,
                                             @RequestParam(required = false, defaultValue = "") String majorCategoryId,
                                             @RequestParam(required = false, defaultValue = "") String subCategoryId,
+                                            @RequestParam(required = false, defaultValue = "") String storeId,
                                             @RequestParam(required = false, defaultValue = "") String keyword,
                                             @RequestParam(required = false, defaultValue = "0.0") Double priceFrom,
                                             @RequestParam(required = false, defaultValue = "0.0") Double priceTo,
                                             @RequestParam(required = false, defaultValue = "0") int page) {
-        return globalCommonService.getResponseOfObject(Optional.of(productService.search(majorCategoryId, categoryId, subCategoryId, keyword, priceFrom, priceTo, page)), HttpStatus.OK);
+        return globalCommonService.getResponseOfObject(Optional.of(productService.search(majorCategoryId, categoryId, subCategoryId, storeId, keyword, priceFrom, priceTo, page)), HttpStatus.OK);
     }
 
     @PostMapping("/list")
@@ -77,5 +80,11 @@ public class PublicController {
         }
 
         return new ResponseEntity<>(totalAmount, HttpStatus.OK);
+    }
+
+    @PostMapping
+    public ResponseEntity<?> getProductPriceByVariant(@RequestBody PriceRequest priceRequest) {
+        Price price = new Price(productService.getProductPriceByVariant(priceRequest));
+        return globalCommonService.getResponseOfObject(Optional.of(price), HttpStatus.OK);
     }
 }

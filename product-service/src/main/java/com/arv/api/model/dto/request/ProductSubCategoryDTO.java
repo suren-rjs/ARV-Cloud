@@ -13,4 +13,5 @@ public class ProductSubCategoryDTO {
     private String categoryId;
     @NotNull
     private String name;
+    private byte[] image;
 }

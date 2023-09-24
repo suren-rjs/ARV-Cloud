@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +49,13 @@ public class CartService implements CartDtoRepository {
         List<CartItem> cartList = allItems.stream().map(cart -> new CartItem(cart.getProductId(), cart.getQty())).collect(Collectors.toList());
 
         return new CartItemsList(cartList, cartList.size());
+    }
+
+    @Override
+    public int findCountById(String productId) {
+        List<Cart> allItems = findAll();
+        Optional<Cart> productItem = allItems.stream().filter(cart -> cart.getProductId().equals(productId)).findFirst();
+        return productItem.isPresent() ? productItem.get().getQty() : 0;
     }
 
     @Override

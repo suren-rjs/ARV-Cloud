@@ -1,6 +1,7 @@
 package com.arv.api.repository.data;
 
 import com.arv.api.model.document.ProductItem;
+import com.arv.api.model.dto.request.PriceRequest;
 import com.arv.api.model.dto.request.ProductItemDTO;
 import com.arv.api.model.dto.response.ProductList;
 
@@ -20,11 +21,12 @@ public interface ProductDtoRepository {
 
     void saveAll(List<ProductItemDTO> productItemDTOList);
 
-    ProductList search(String majorCategoryId, String categoryId,  String subCategoryId, String keyword, double priceFrom, double priceTo, int page);
+    ProductList search(String majorCategoryId, String categoryId,  String subCategoryId,  String storeId, String keyword, double priceFrom, double priceTo, int page);
 
     ProductList findProductByIdsIn(String[] ids, int page);
 
     void preserveOrder(String id, int qty, String variant);
 
-    void unpreserve(String id, int qty, String variant);
+    void unPreserve(String id, int qty, String variant);
+    Double getProductPriceByVariant(PriceRequest priceRequest);
 }
