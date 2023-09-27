@@ -82,7 +82,7 @@ public class ProductItem {
         ArrayList<ProductVariant> variantsList = new ArrayList<>();
         for (int i = 0; i < variants.length; i++) {
             String variant = variants[i];
-            String variantColor = color[i];
+            String variantColor;
             String variantSize;
             Double price;
             Integer quantity;
@@ -97,9 +97,14 @@ public class ProductItem {
                 quantity = 0;
             }
             try {
+                variantColor = color[i];
+            } catch (Exception e) {
+                variantColor = null;
+            }
+            try {
                 variantSize = size[i];
             } catch (Exception e) {
-                variantSize = "";
+                variantSize = null;
             }
             variantsList.add(new ProductVariant(variant, variantColor, variantSize, price, quantity));
         }
