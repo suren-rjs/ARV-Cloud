@@ -53,7 +53,6 @@ public class ProductItem {
     private Double[] mrpPrice;
     @Indexed
     private Double[] sellingPrice;
-    private Integer[] quantity;
     @Indexed
     private Integer[] stock;
     @Indexed
@@ -70,17 +69,21 @@ public class ProductItem {
     @Field("productVariants")
     private ArrayList<ProductVariant> productVariants;
     @Indexed
-    private String color;
+    private String[] color;
     @Indexed
-    private String size;
+    private String[] size;
 
     public ArrayList<ProductVariant> getProductVariants() {
         String[] variants = this.getProductVariation();
         Double[] prices = this.getSellingPrice();
-        Integer[] quantities = this.getQuantity();
+        Integer[] quantities = this.getStock();
+        String[] color = this.getColor();
+        String[] size = this.getSize();
         ArrayList<ProductVariant> variantsList = new ArrayList<>();
         for (int i = 0; i < variants.length; i++) {
             String variant = variants[i];
+            String variantColor = color[i];
+            String variantSize;
             Double price;
             Integer quantity;
             try {
@@ -93,7 +96,12 @@ public class ProductItem {
             } catch (Exception e) {
                 quantity = 0;
             }
-            variantsList.add(new ProductVariant(variant, price, quantity));
+            try {
+                variantSize = size[i];
+            } catch (Exception e) {
+                variantSize = "";
+            }
+            variantsList.add(new ProductVariant(variant, variantColor, variantSize, price, quantity));
         }
         return variantsList;
     }

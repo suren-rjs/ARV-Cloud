@@ -65,7 +65,6 @@ public class ProductService implements ProductDtoRepository {
         productItem.setSubCategoryTags(productItemDto.getSubCategoryTags());
         productItem.setSellingPrice(productItemDto.getSellingPrice());
         productItem.setMrpPrice(productItemDto.getMrpPrice());
-        productItem.setQuantity(productItemDto.getQuantity());
         productItem.setStock(productItemDto.getStock());
         productItem.setDiscount(productItemDto.getDiscount());
         productItem.setTags(productItemDto.getTags());
@@ -116,7 +115,6 @@ public class ProductService implements ProductDtoRepository {
             productItem.setSubCategoryTags(updatedDetails.getSubCategoryTags());
             productItem.setSellingPrice(updatedDetails.getSellingPrice());
             productItem.setMrpPrice(updatedDetails.getMrpPrice());
-            productItem.setQuantity(updatedDetails.getQuantity());
             productItem.setStock(updatedDetails.getStock());
             productItem.setDiscount(updatedDetails.getDiscount());
             productItem.setTags(updatedDetails.getTags());
@@ -183,7 +181,6 @@ public class ProductService implements ProductDtoRepository {
             productItem.setSubCategoryTags(productItemDTO.getSubCategoryTags());
             productItem.setSellingPrice(productItemDTO.getSellingPrice());
             productItem.setMrpPrice(productItemDTO.getMrpPrice());
-            productItem.setQuantity(productItemDTO.getQuantity());
             productItem.setStock(productItemDTO.getStock());
             productItem.setDiscount(productItemDTO.getDiscount());
             productItem.setTags(productItemDTO.getTags());

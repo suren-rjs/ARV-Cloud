@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductVariant {
     private String productVariant;
+    private String color;
+    private String size;
     private Double price;
     private Integer qty;
 }

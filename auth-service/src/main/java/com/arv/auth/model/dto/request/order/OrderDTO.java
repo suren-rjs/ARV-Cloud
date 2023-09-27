@@ -41,4 +41,5 @@ public class OrderDTO {
     private Double discountedPrice;
     private Double couponDiscountPercentage;
     private Double finalPrice;
+    private Double deliveryBoyTip;
 }

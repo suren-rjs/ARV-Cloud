@@ -57,7 +57,6 @@ public class ProductItemDTO {
     private String[] productVariation;
     private Double[] mrpPrice;
     private Double[] sellingPrice;
-    private Integer[] quantity;
     private Integer[] stock;
     private Double discount;
     private String tags;
@@ -67,8 +66,8 @@ public class ProductItemDTO {
     private Date createdDate = new Date();
     @Field("productVariants")
     private ArrayList<ProductVariant> productVariants;
-    private String color;
-    private String size;
+    private String[] color;
+    private String[] size;
 
     public String getCategoryId() {
         return this.productCategory.getId();
@@ -82,10 +81,14 @@ public class ProductItemDTO {
     public ArrayList<ProductVariant> getProductVariants() {
         String[] variants = this.getProductVariation();
         Double[] prices = this.getSellingPrice();
-        Integer[] quantities = this.getQuantity();
+        Integer[] quantities = this.getStock();
+        String[] color = this.getColor();
+        String[] size = this.getSize();
         ArrayList<ProductVariant> variantsList = new ArrayList<>();
         for (int i = 0; i < variants.length; i++) {
             String variant = variants[i];
+            String variantColor = color[i];
+            String variantSize;
             Double price = 0.0;
             Integer quantity = 0;
             try {
@@ -98,7 +101,12 @@ public class ProductItemDTO {
             } catch (Exception e) {
                 quantity = 0;
             }
-            variantsList.add(new ProductVariant(variant, price, quantity));
+            try {
+                variantSize = size[i];
+            } catch (Exception e) {
+                variantSize = "";
+            }
+            variantsList.add(new ProductVariant(variant, variantColor, variantSize, price, quantity));
         }
         return variantsList;
     }

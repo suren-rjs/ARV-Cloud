@@ -58,6 +58,7 @@ public class Order {
     private Double deliveryCharge;
     private Double taxPercentage;
     private Double totalAmount;
+    private Double deliveryBoyTip;
     @JsonIgnore
     private String addressId;
     @JsonIgnore

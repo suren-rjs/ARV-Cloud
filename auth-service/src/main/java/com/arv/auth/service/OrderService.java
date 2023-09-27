@@ -108,6 +108,11 @@ public class OrderService implements OrderDtoRepository {
         order.setDeliveryAddress(deliveryAddress);
         order.setUserId(userId);
         order.setOrderedDate(new Date());
+        order.setDeliveryCharge(orderDTO.getDeliveryCharge());
+        order.setDeliveryBoyTip(orderDTO.getDeliveryBoyTip());
+        order.setDiscountedPrice(orderDTO.getDiscountedPrice());
+        order.setCouponDiscountPercentage(orderDTO.getCouponDiscountPercentage());
+        order.setCouponCode(orderDTO.getCouponCode());
         try {
             Order preservedOrder = preserveOrder(order, orderDTO.getAccessToken());
             orderRepository.save(preservedOrder);
