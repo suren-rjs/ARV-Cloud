@@ -48,6 +48,7 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
     public <S extends ProductCategory> ProductCategory updateCategory(ProductCategoryDTO productCategory) {
         ProductCategory category = productCategoryRepository.findOneById(productCategory.getId()).orElseThrow(() -> new NotFoundException("Invalid Id"));
         category.setName(productCategory.getName());
+        category.setMajorCategory(productCategory.getMajorCategory());
         if (productCategory.getImage() != null) {
             String id = productCategory.getId();
             category.setImage(uploadFile(convertBytesToMux(productCategory.getImage(), id, "image/jpeg"), id));
@@ -65,6 +66,7 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
             ProductSubCategory newProductSubCategory = new ProductSubCategory();
             newProductSubCategory.setName(productSubCategory.getName());
             newProductSubCategory.setCategoryId(productSubCategory.getCategoryId());
+            newProductSubCategory.setMajorCategory(productSubCategory.getMajorCategory());
             String id = productSubCategoryRepository.save(newProductSubCategory).getId();
             if (productSubCategory.getImage() != null) {
                 newProductSubCategory.setImage(uploadFile(convertBytesToMux(productSubCategory.getImage(), id, "image/jpeg"), id));
@@ -87,6 +89,7 @@ public class ProductCategoryService implements ProductCategoryDtoRepository {
     public ProductSubCategory updateSubCategories(ProductSubCategoryDTO productSubCategory) {
         ProductSubCategory subCategory = productSubCategoryRepository.findOneById(productSubCategory.getId()).orElseThrow(() -> new NotFoundException("Invalid Id"));
         subCategory.setName(productSubCategory.getName());
+        subCategory.setMajorCategory(productSubCategory.getMajorCategory());
         if (productSubCategory.getImage() != null) {
             String id = productSubCategory.getId();
             subCategory.setImage(uploadFile(convertBytesToMux(productSubCategory.getImage(), id, "image/jpeg"), id));

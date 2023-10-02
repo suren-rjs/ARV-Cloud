@@ -72,6 +72,7 @@ public class ProductItem {
     private String[] color;
     @Indexed
     private String[] size;
+    private Boolean isEnabled;
 
     public ArrayList<ProductVariant> getProductVariants() {
         String[] variants = this.getProductVariation();
@@ -79,6 +80,7 @@ public class ProductItem {
         Integer[] quantities = this.getStock();
         String[] color = this.getColor();
         String[] size = this.getSize();
+        String unit = this.majorCategoryId.equals("Vegetables") ? "Kg" : "qty";
         ArrayList<ProductVariant> variantsList = new ArrayList<>();
         for (int i = 0; i < variants.length; i++) {
             String variant = variants[i];
@@ -106,7 +108,7 @@ public class ProductItem {
             } catch (Exception e) {
                 variantSize = null;
             }
-            variantsList.add(new ProductVariant(variant, variantColor, variantSize, price, quantity));
+            variantsList.add(new ProductVariant(variant, variantColor, variantSize, unit, price, quantity));
         }
         return variantsList;
     }

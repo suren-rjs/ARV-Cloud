@@ -29,4 +29,5 @@ public interface ProductDtoRepository {
 
     void unPreserve(String id, int qty, String variant);
     Double getProductPriceByVariant(PriceRequest priceRequest);
+    void changeStatus(String productId, Boolean bool);
 }

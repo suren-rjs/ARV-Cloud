@@ -19,6 +19,7 @@ public class ProductSubCategory {
     @NotNull
     @Indexed
     private String categoryId;
+    private String majorCategory;
     @NotNull
     private String name;
     private String image;

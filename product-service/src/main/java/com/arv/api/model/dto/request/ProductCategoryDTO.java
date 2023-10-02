@@ -14,5 +14,6 @@ public class ProductCategoryDTO {
     private String id;
     @NotNull
     private String name;
+    private String majorCategory;
     private byte[] image;
 }

@@ -2,4 +2,4 @@ spring:
   cloud:
     config:
       uri:
-        - http://85.31.233.21:9196
+        - http://34.93.69.101:9196

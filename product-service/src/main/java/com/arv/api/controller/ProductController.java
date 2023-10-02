@@ -3,6 +3,7 @@ package com.arv.api.controller;
 import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.dto.request.PreserveStock;
 import com.arv.api.model.dto.request.ProductItemDTO;
+import com.arv.api.model.dto.request.ProductStatus;
 import com.arv.api.service.ProductService;
 import com.arv.api.service.utils.MultipartFileToXLSXConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,5 +131,11 @@ public class ProductController {
         }
 
         return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @PostMapping("/changeStatus")
+    public ResponseEntity<?> getProductPriceByVariant(@RequestBody ProductStatus status) {
+        productService.changeStatus(status.getProductId(), status.getValue());
+        return globalCommonService.getResponseEntityByMessageAndStatus("Status has been changed", HttpStatus.OK);
     }
 }

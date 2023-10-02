@@ -73,8 +73,8 @@ public class ProductService implements ProductDtoRepository {
         String categoryNameOrId = productItemDto.getCategoryNameOrId();
         String subCategoryNameOrId = productItemDto.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDto.getSubCategoryNameOrId();
 
-        ProductCategory productCategory = getCategoryId(categoryNameOrId);
-        ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+        ProductCategory productCategory = getCategoryId(categoryNameOrId, productItemDto.getMajorCategoryId());
+        ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId, productItemDto.getMajorCategoryId());
         String subCategoryTags = productItem.getSubCategoryTags();
 
         productItem.setCategoryId(productCategory.getId());
@@ -87,6 +87,7 @@ public class ProductService implements ProductDtoRepository {
         productItem.setImageUri(uploadFile(convertBytesToMux(productItemDto.getImage(), id, "image/jpeg"), id));
         productItem.setTags(productItemDto.getTags());
         productItem.setId(id);
+        productItem.setIsEnabled(true);
 
         productItemRepository.save(productItem);
     }
@@ -126,8 +127,8 @@ public class ProductService implements ProductDtoRepository {
             String categoryNameOrId = updatedDetails.getCategoryNameOrId();
             String subCategoryNameOrId = updatedDetails.getSubCategoryNameOrId() == null ? categoryNameOrId : updatedDetails.getSubCategoryNameOrId();
 
-            ProductCategory productCategory = getCategoryId(categoryNameOrId);
-            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+            ProductCategory productCategory = getCategoryId(categoryNameOrId, updatedDetails.getMajorCategoryId());
+            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId, updatedDetails.getMajorCategoryId());
 
             productItem.setCategoryId(productCategory.getId());
             productItem.setSubCategoryId(productSubCategory.getId());
@@ -161,8 +162,8 @@ public class ProductService implements ProductDtoRepository {
             String categoryNameOrId = productItemDTO.getCategoryNameOrId();
             String subCategoryNameOrId = productItemDTO.getSubCategoryNameOrId();
 
-            ProductCategory productCategory = getCategoryId(categoryNameOrId);
-            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+            ProductCategory productCategory = getCategoryId(categoryNameOrId, productItemDTO.getMajorCategoryId());
+            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId, productItemDTO.getMajorCategoryId());
 
             productItemDTO.setCategoryNameOrId(productCategory.getId());
             productItemDTO.setSubCategoryTags(productItemDTO.getSubCategoryTags());
@@ -193,8 +194,8 @@ public class ProductService implements ProductDtoRepository {
             String categoryNameOrId = productItemDTO.getCategoryNameOrId();
             String subCategoryNameOrId = productItemDTO.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDTO.getSubCategoryNameOrId();
 
-            ProductCategory productCategory = getCategoryId(categoryNameOrId);
-            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId);
+            ProductCategory productCategory = getCategoryId(categoryNameOrId, productItemDTO.getMajorCategoryId());
+            ProductSubCategory productSubCategory = getSubCategoryId(productCategory.getId(), subCategoryNameOrId, productItemDTO.getMajorCategoryId());
 
             productItem.setCategoryId(productCategory.getId());
             productItem.setSubCategoryId(productSubCategory.getId());
@@ -203,6 +204,7 @@ public class ProductService implements ProductDtoRepository {
             productItem.setProductSubCategory(productSubCategory);
             productItem.setId(id);
             productItem.setProductVariants(productItemDTO.getProductVariants());
+            productItem.setIsEnabled(true);
             if (productItemDTO.getImageFile() != null) {
                 productItem.setImageUri(uploadFile(productItemDTO.getImageFile(), id));
             }
@@ -271,7 +273,14 @@ public class ProductService implements ProductDtoRepository {
         return prices[variantIndex];
     }
 
-    private ProductCategory getCategoryId(String nameOrId) {
+    @Override
+    public void changeStatus(String productId, Boolean bool) {
+        ProductItem productItem = productItemRepository.findOneById(productId).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
+        productItem.setIsEnabled(bool);
+        productItemRepository.save(productItem);
+    }
+
+    private ProductCategory getCategoryId(String nameOrId, String majorCategory) {
         Optional<ProductCategory> productCategory = productCategoryService.findOneCategoryByNameOrId(nameOrId);
         if (Arrays.asList(null, "", "-").contains(nameOrId)) {
             productCategory = productCategoryService.getOneCategoryById("650b492f7c36ab5ea4fc4cf2");
@@ -281,11 +290,12 @@ public class ProductService implements ProductDtoRepository {
 
         ProductCategory newProductCategory = new ProductCategory();
         newProductCategory.setName(nameOrId);
+        newProductCategory.setMajorCategory(majorCategory);
         newProductCategory = productCategoryService.saveCategory(newProductCategory);
         return newProductCategory;
     }
 
-    private ProductSubCategory getSubCategoryId(String categoryId, String nameOrId) {
+    private ProductSubCategory getSubCategoryId(String categoryId, String nameOrId, String majorCategory) {
         Optional<ProductSubCategory> productSubCategories = productCategoryService.getOneByCategoryIdAndName(categoryId, nameOrId);
         if (!productSubCategories.isPresent()) {
             productSubCategories = productCategoryService.getOneByCategoryIdAndId(categoryId, nameOrId);
@@ -295,6 +305,7 @@ public class ProductService implements ProductDtoRepository {
 
         ProductSubCategoryDTO subCategory = new ProductSubCategoryDTO();
         subCategory.setName(nameOrId);
+        subCategory.setMajorCategory(majorCategory);
         subCategory.setCategoryId(categoryId);
         return productCategoryService.saveSubCategories(subCategory);
     }

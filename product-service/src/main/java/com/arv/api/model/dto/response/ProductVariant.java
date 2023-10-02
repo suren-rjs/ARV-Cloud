@@ -14,6 +14,7 @@ public class ProductVariant {
     private String color;
     @Nullable
     private String size;
+    private String unit;
     private Double price;
     private Integer qty;
 }

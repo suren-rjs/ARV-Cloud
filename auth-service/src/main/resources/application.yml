@@ -13,9 +13,9 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://85.31.233.21:8761/eureka
+      defaultZone: http://34.93.69.101:8761/eureka
   instance:
-    hostname: 85.31.233.21
+    hostname: 34.93.69.101
 
 cloud:
   aws:
