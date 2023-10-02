@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -44,4 +45,6 @@ public class User {
     private List<String> recentWishLists;
     @JsonIgnore
     private Boolean activeStatus;
+    @JsonIgnore
+    private Date createdDate;
 }

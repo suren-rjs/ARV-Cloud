@@ -2,9 +2,15 @@ package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.User;
+import com.arv.auth.model.rest.UsersList;
 import com.arv.auth.repository.crud.UserRepository;
 import com.arv.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +22,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AdminController {
+    @Value("${product.pageSize}")
+    private int PAGE_COUNT;
+
     @Autowired
     private GlobalCommonService globalCommonService;
     @Autowired
@@ -43,11 +52,22 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers(@RequestParam String keyword) {
+    public ResponseEntity<?> getAllUsers(@RequestParam String keyword, @RequestParam(defaultValue = "0") Integer page) {
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "createdDate");
+        Pageable pageable = PageRequest.of(page, PAGE_COUNT, descendingSort);
         if (!keyword.replaceAll(" ", "").isEmpty()) {
             return new ResponseEntity<>(userRepository.findAll(), HttpStatus.OK);
         }
-        return new ResponseEntity<>(userRepository.findAllByUsernameContainingIgnoreCaseOrProfileNameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, keyword), HttpStatus.OK);
+        Page<User> usersPage = userRepository.findAllByUsernameContainingIgnoreCaseOrProfileNameContainingIgnoreCaseOrEmailContainingIgnoreCase(keyword, keyword, keyword, pageable);
+
+
+        UsersList usersList = new UsersList(
+                usersPage.getContent(),
+                page,
+                globalCommonService.getTotalPage(usersPage.getTotalPages()),
+                usersPage.getNumberOfElements()
+        );
+        return new ResponseEntity<>(usersList, HttpStatus.OK);
     }
 
     @PutMapping("/changeActiveStatus/{id}")
