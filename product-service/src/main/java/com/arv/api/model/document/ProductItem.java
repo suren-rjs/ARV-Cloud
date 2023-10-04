@@ -66,6 +66,7 @@ public class ProductItem {
     @JsonIgnore
     private String subCategoryNameOrId;
     private Date createdDate = new Date();
+    private Date editedDate = new Date();
     @Field("productVariants")
     private ArrayList<ProductVariant> productVariants;
     @Indexed

@@ -83,6 +83,7 @@ public class OrderController {
     private ResponseEntity<?> newOrder(@RequestBody OrderDTO orderDTO) {
         HttpStatus status;
         String message = "Order placement success!";
+        System.out.println(orderDTO.toString());
         try {
             status = HttpStatus.OK;
             orderService.newOrder(orderDTO);

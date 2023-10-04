@@ -3,9 +3,9 @@ package com.arv.auth.service;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Address;
 import com.arv.auth.model.document.Order;
-import com.arv.auth.model.dto.request.cart.CartDto;
 import com.arv.auth.model.dto.request.cart.PreserveStock;
 import com.arv.auth.model.dto.request.order.OrderDTO;
+import com.arv.auth.model.dto.request.order.OrderItemDetail;
 import com.arv.auth.model.dto.request.order.OrderList;
 import com.arv.auth.model.dto.request.order.Orders;
 import com.arv.auth.model.dto.response.OrderStatement;
@@ -32,6 +32,7 @@ import org.webjars.NotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class OrderService implements OrderDtoRepository {
@@ -97,14 +98,17 @@ public class OrderService implements OrderDtoRepository {
         String userId = globalCommonService.getCurrentUser().getId();
         Address deliveryAddress = addressRepository.findOneByIdAndUserId(orderDTO.getAddressId(), userId).orElseThrow(() -> new NotFoundException("Invalid address id"));
         Order order = (Order) globalCommonService.convertObject(orderDTO, Order.class);
+        AtomicReference<Double> orderValue = new AtomicReference<>(0.0);
         if (orderDTO.getPaymentMode() == PaymentMode.COD) {
-            order.getOrderItems().forEach(cartDto -> {
-                ProductItem productItem = (ProductItem) globalCommonService.getForObject(GATEWAY + "/products/" + cartDto.getProductId(), ProductItem.class);
-                int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), cartDto.getVariant());
+            order.getOrderItems().forEach(detail -> {
+                ProductItem productItem = (ProductItem) globalCommonService.getForObject(GATEWAY + "/products/" + detail.getProductId(), ProductItem.class);
+                int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), detail.getVariant());
                 Double price = productItem.getSellingPrice()[variantIndex];
-                cartDto.setOrderPrice(price);
+                detail.setItemTotalPrice(detail.getQty() * price);
+                orderValue.updateAndGet(itemTotal -> itemTotal + detail.getItemTotalPrice());
             });
         }
+        order.setOrderValue(orderValue.get());
         order.setDeliveryAddress(deliveryAddress);
         order.setUserId(userId);
         order.setOrderedDate(new Date());
@@ -125,7 +129,7 @@ public class OrderService implements OrderDtoRepository {
         int size = order.getOrderItems().size(), maxIndex = 0;
         boolean isFailure = false;
         for (int i = 0; i < size; i++) {
-            CartDto cart = order.getOrderItems().get(i);
+            OrderItemDetail cart = order.getOrderItems().get(i);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(accessToken);
@@ -175,7 +179,7 @@ public class OrderService implements OrderDtoRepository {
 
     private void extractInFailure(Order order, String token, int maxIndex) {
         for (int i = 0; i < maxIndex; i++) {
-            CartDto cart = order.getOrderItems().get(i);
+            OrderItemDetail cart = order.getOrderItems().get(i);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(token);

@@ -1,6 +1,6 @@
 package com.arv.auth.model.document;
 
-import com.arv.auth.model.dto.request.cart.CartDto;
+import com.arv.auth.model.dto.request.order.OrderItemDetail;
 import com.arv.auth.model.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class Order {
     @NonNull
     private String userId;
     @NonNull
-    private List<CartDto> orderItems;
+    private List<OrderItemDetail> orderItems;
     private PaymentStatus paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT;
     @Indexed
     private OrderStatus orderStatus = OrderStatus.WAITING;

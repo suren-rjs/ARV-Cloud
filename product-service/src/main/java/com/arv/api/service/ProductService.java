@@ -28,10 +28,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.springframework.data.domain.Sort;
 
@@ -88,6 +85,7 @@ public class ProductService implements ProductDtoRepository {
         productItem.setTags(productItemDto.getTags());
         productItem.setId(id);
         productItem.setIsEnabled(true);
+        productItem.setEditedDate(new Date());
 
         productItemRepository.save(productItem);
     }
@@ -135,6 +133,7 @@ public class ProductService implements ProductDtoRepository {
 
             productItem.setProductCategory(productCategory);
             productItem.setProductSubCategory(productSubCategory);
+            productItem.setEditedDate(new Date());
 
             if (updatedDetails.getImage() != null) {
                 productItem.setImageUri(uploadFile(convertBytesToMux(updatedDetails.getImage(), updatedDetails.getId(), "image/jpeg"), updatedDetails.getId()));
@@ -219,7 +218,7 @@ public class ProductService implements ProductDtoRepository {
 
     @Override
     public ProductList search(String majorCategory, String categoryId, String subCategoryId, String storeId, String keyword, double priceFrom, double priceTo, int page) {
-        Sort descendingSort = Sort.by(Sort.Direction.DESC, "createdDate");
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "editedDate");
         Pageable pageable = PageRequest.of(page, PAGE_COUNT, descendingSort);
         double startPrice = Math.min(priceFrom, priceTo);
         double endPrice = Math.max(priceFrom, priceTo);

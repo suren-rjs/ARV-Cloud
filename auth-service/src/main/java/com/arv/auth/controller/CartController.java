@@ -3,6 +3,7 @@ package com.arv.auth.controller;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.dto.request.cart.CartDto;
+import com.arv.auth.model.dto.request.cart.ProductVariant;
 import com.arv.auth.model.dto.response.CartItemsList;
 import com.arv.auth.model.dto.response.Count;
 import com.arv.auth.model.dto.response.Total;
@@ -59,8 +60,12 @@ public class CartController {
                     .findFirst()
                     .map(Cart::getVariant)
                     .orElse("");
+            ProductVariant productVariant = productItem.getProductVariants().stream().filter(productVariant1 -> productVariant1.getProductVariant().equals(orderVariant)).findFirst().orElse(null);
             productItem.setOrderQty(orderQty);
             productItem.setOrderProductVariation(orderVariant);
+            if (productVariant != null) {
+                productItem.setOrderPrice(productVariant.getPrice());
+            }
         });
         return globalCommonService.getResponseOfObject(Optional.of(productList), HttpStatus.OK);
     }
@@ -102,7 +107,7 @@ public class CartController {
             totalAmount += quantity * sellingPriceByVariant;
         }
 
-        return globalCommonService.getResponseOfObject(Optional.of(new Total(45.0, totalAmount)), HttpStatus.OK);
+        return globalCommonService.getResponseOfObject(Optional.of(new Total(0.0, totalAmount)), HttpStatus.OK);
     }
 
     @GetMapping("/idAndCount")

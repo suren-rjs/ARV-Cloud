@@ -81,7 +81,7 @@ public class AuthenticationController {
         return new ResponseEntity<>(globalCommonService.getCurrentUser(), HttpStatus.OK);
     }
 
-    @PutMapping("")
+    @PutMapping()
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         String responseMessage;
         HttpStatus responseStatus = HttpStatus.NOT_ACCEPTABLE;
@@ -89,9 +89,8 @@ public class AuthenticationController {
         Optional<User> existUser = userRepository.findOneByUsername(user.getUsername());
         if (existUser.isPresent()) {
             User existUserDetails = existUser.get();
-            user.setId(existUserDetails.getId());
-            userRepository.save(user);
-            responseStatus = HttpStatus.ACCEPTED;
+            existUserDetails.setProfileName(user.getProfileName());
+            userRepository.save(existUserDetails);
             responseMessage = "User details updated !";
         } else {
             responseMessage = "Invalid userid " + user.getUsername();

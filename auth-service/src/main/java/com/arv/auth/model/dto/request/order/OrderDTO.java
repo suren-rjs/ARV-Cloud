@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderDTO {
     @NonNull
-    private List<CartDto> orderItems;
+    private List<OrderItemDetail> orderItems;
     private String paymentId;
     private PaymentMode paymentMode = PaymentMode.COD;
     private PaymentStatus paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT;
@@ -29,7 +29,7 @@ public class OrderDTO {
     private String addressId;
     @NonNull
     private String accessToken;
-    private Timestamp orderedDate = new Timestamp(new Date().getTime());
+    private Date orderedDate = new Date();
     private Date placedDate;
     private Date expectedDeliveryDate;
     private Date deliveredDate;

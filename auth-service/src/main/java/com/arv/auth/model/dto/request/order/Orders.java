@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Orders {
-    List<CartDto> list;
+    List<OrderItemDetail> list;
 }
