@@ -1,11 +1,9 @@
 package com.arv.auth.model.rest;
 
 import com.arv.auth.model.dto.request.cart.ProductVariant;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.redis.core.index.Indexed;
 import org.springframework.web.multipart.MultipartFile;

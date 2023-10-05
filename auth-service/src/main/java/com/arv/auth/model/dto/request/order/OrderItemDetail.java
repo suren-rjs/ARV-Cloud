@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class OrderItemDetail {
     private String productId;
     private String variant;
+    private String itemName;
     private Integer qty;
+    private Double itemPrice;
     private Double itemTotalPrice;
 }

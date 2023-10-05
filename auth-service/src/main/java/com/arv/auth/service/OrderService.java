@@ -105,6 +105,8 @@ public class OrderService implements OrderDtoRepository {
                 int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), detail.getVariant());
                 Double price = productItem.getSellingPrice()[variantIndex];
                 detail.setItemTotalPrice(detail.getQty() * price);
+                detail.setItemPrice(price);
+                detail.setItemName(productItem.getProductName());
                 orderValue.updateAndGet(itemTotal -> itemTotal + detail.getItemTotalPrice());
             });
         }
