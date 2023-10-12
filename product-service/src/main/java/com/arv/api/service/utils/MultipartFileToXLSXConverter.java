@@ -109,7 +109,7 @@ public class MultipartFileToXLSXConverter {
                     Double discount = (Double) getValueByIndex(row, 9, false);
 
                     Integer[] stock = getIntListByIndex(row, 11);
-                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll(" ", "-");
+                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
                     String tags = "";
                     try {
                         tags = row.getCell(14).getStringCellValue().toLowerCase();
@@ -175,7 +175,7 @@ public class MultipartFileToXLSXConverter {
 
                     Integer[] stock = getIntListByIndex(row, 11);
                     String scannerId = (String) getValueByIndex(row, 12, true);
-                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll(" ", "-");
+                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
                     String tags = "";
                     try {
                         tags = row.getCell(14).getStringCellValue().toLowerCase();
@@ -234,7 +234,7 @@ public class MultipartFileToXLSXConverter {
                     }
 
                     Integer[] stock = getIntListByIndex(row, 9);
-                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll(" ", "-");
+                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
                     String tags = "";
                     try {
                         tags = row.getCell(11).getStringCellValue().toLowerCase();

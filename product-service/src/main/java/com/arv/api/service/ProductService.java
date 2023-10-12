@@ -54,7 +54,7 @@ public class ProductService implements ProductDtoRepository {
 
     @Override
     public <S extends ProductItem> void save(ProductItemDTO productItemDto) {
-        String id = productItemDto.getStoreId() + productItemDto.getProductName().toLowerCase().replaceAll(" ", "-");
+        String id =  productItemDto.getStoreId() + "-" + productItemDto.getProductName().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
 
         ProductItem productItem = new ProductItem();
         productItem.setProductName(productItemDto.getProductName());
@@ -173,8 +173,7 @@ public class ProductService implements ProductDtoRepository {
         }
 
         Iterable<ProductItem> iterableProductItems = () -> productItemDTOList.stream().map(productItemDTO -> {
-            String id = productItemDTO.getStoreId() + "-" + productItemDTO.getProductName().toLowerCase().replaceAll(" ", "-");
-
+            String id =  productItemDTO.getStoreId() + "-" + productItemDTO.getProductName().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
             ProductItem productItem = new ProductItem();
             productItem.setProductName(productItemDTO.getProductName());
             productItem.setDescription(productItemDTO.getDescription());

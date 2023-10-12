@@ -49,6 +49,7 @@ public class CartController {
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
 
         ProductList productList = (ProductList) globalCommonService.postForObject(uriWithParams, entity, ProductList.class);
+        List<ProductItem> orderCartList = new ArrayList<>();
         productList.getProducts().forEach(productItem -> {
             Integer orderQty = cartList.stream()
                     .filter(cart -> cart.getProductId().equals(productItem.getId()))
@@ -67,7 +68,20 @@ public class CartController {
                 productItem.setOrderPrice(productVariant.getPrice());
             }
         });
-        return globalCommonService.getResponseOfObject(Optional.of(productList), HttpStatus.OK);
+        cartList.forEach(cart -> {
+            ProductItem productItem = productList.getProducts().stream().filter(product -> product.getId().equals(cart.getProductId())).findFirst().orElse(null);
+            if (productItem != null) {
+                productItem.setOrderProductVariation(cart.getVariant());
+                productItem.setOrderQty(cart.getQty());
+                ProductVariant productVariant = productItem.getProductVariants().stream().filter(productVariant1 -> productVariant1.getProductVariant().equals(cart.getVariant())).findFirst().orElse(null);
+                if (productVariant != null) {
+                    productItem.setOrderPrice(productVariant.getPrice());
+                }
+                orderCartList.add(productItem);
+            }
+        });
+
+        return globalCommonService.getResponseOfObject(Optional.of(orderCartList), HttpStatus.OK);
     }
 
     @GetMapping("/cartValue")
@@ -117,8 +131,8 @@ public class CartController {
     }
 
     @GetMapping("/cartCount")
-    private ResponseEntity<?> getCartItemCountById(@RequestParam(defaultValue = "") String productId) {
-        Count itemCount = new Count(cartService.findCountById(productId));
+    private ResponseEntity<?> getCartItemCountById(@RequestParam(defaultValue = "") String productId, @RequestParam(defaultValue = "") String variant) {
+        Count itemCount = new Count(cartService.findCountByIdAndVariant(productId, variant));
         return globalCommonService.getResponseOfObject(Optional.of(itemCount), HttpStatus.OK);
     }
 
@@ -137,12 +151,12 @@ public class CartController {
     }
 
     @DeleteMapping
-    private ResponseEntity<?> deleteFromCart(String id) {
+    private ResponseEntity<?> deleteFromCart(String id, String variant) {
         String message = "Product has been removed from cart";
         HttpStatus status = HttpStatus.OK;
         try {
             if (Objects.equals(id, "")) throw new RuntimeException("Invalid product id");
-            cartService.delete(id);
+            cartService.delete(id, variant);
         } catch (Exception e) {
             message = e.getMessage();
             status = HttpStatus.NOT_ACCEPTABLE;

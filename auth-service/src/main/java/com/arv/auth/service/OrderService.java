@@ -59,7 +59,7 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public OrderList findByPaymentStatusAndOrderIdContaining(PaymentStatus paymentStatus, String orderId, int pageNumber) {
-        Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
+        Sort descendingSort = Sort.by(Sort.Direction.ASC, "orderedDate");
         Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
 
         Page<Order> filteredOrders = orderRepository.findByPaymentStatusAndOrderIdContaining(paymentStatus, orderId, pageable);
@@ -69,7 +69,7 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public OrderList findByOrderStatusAndOrderIdContaining(OrderStatus orderStatus, String orderId, int pageNumber) {
-        Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
+        Sort descendingSort = Sort.by(Sort.Direction.ASC, "orderedDate");
         Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
         Page<Order> filteredOrders;
         if (Objects.equals(orderId, "")) {
@@ -175,7 +175,8 @@ public class OrderService implements OrderDtoRepository {
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
         OrderStatement orderStatement = (OrderStatement) globalCommonService.postForObject(GATEWAY + "/public/getStatment", entity, OrderStatement.class);
         order.setOrderValue(orderStatement.getTotalAmount());
-        order.setTotalAmount(orderStatement.getTotalAmount() + order.getDeliveryCharge() - order.getDiscountedPrice());
+        order.setTotalAmount(orderStatement.getTotalAmount() + order.getDeliveryCharge());
+        order.setFinalPrice(order.getTotalAmount() - order.getDiscountedPrice());
         return order;
     }
 

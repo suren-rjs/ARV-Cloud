@@ -29,8 +29,8 @@ public class CartService implements CartDtoRepository {
         Cart item = (Cart) globalCommonService.convertObject(cartDto, Cart.class);
         item.setUserId(user.getId());
 
-        if (cartRepository.existsByProductIdAndUserId(cartDto.getProductId(), user.getId())) {
-            item = cartRepository.findByProductIdAndUserId(cartDto.getProductId(), user.getId());
+        if (cartRepository.existsByProductIdAndUserIdAndVariant(cartDto.getProductId(), user.getId(), item.getVariant())) {
+            item = cartRepository.findByProductIdAndUserIdAndVariant(cartDto.getProductId(), user.getId(), item.getVariant());
             item.setQty(cartDto.getQty());
         }
 
@@ -52,16 +52,16 @@ public class CartService implements CartDtoRepository {
     }
 
     @Override
-    public int findCountById(String productId) {
+    public int findCountByIdAndVariant(String productId, String variant) {
         List<Cart> allItems = findAll();
-        Optional<Cart> productItem = allItems.stream().filter(cart -> cart.getProductId().equals(productId)).findFirst();
+        Optional<Cart> productItem = allItems.stream().filter(cart -> cart.getProductId().equals(productId) && cart.getVariant().equals(variant)).findFirst();
         return productItem.isPresent() ? productItem.get().getQty() : 0;
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(String id, String variant) {
         User user = globalCommonService.getCurrentUser();
-        Cart cart = cartRepository.findByProductIdAndUserId(id, user.getId());
+        Cart cart = cartRepository.findByProductIdAndUserIdAndVariant(id, user.getId(), variant);
         cartRepository.delete(cart);
     }
 
