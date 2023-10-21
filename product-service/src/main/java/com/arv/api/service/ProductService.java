@@ -86,6 +86,8 @@ public class ProductService implements ProductDtoRepository {
         productItem.setId(id);
         productItem.setIsEnabled(true);
         productItem.setEditedDate(new Date());
+        productItem.setStoreId(productItemDto.getStoreId());
+        productItem.setMajorCategoryId(productItemDto.getMajorCategoryId());
 
         productItemRepository.save(productItem);
     }
@@ -222,7 +224,7 @@ public class ProductService implements ProductDtoRepository {
         double startPrice = Math.min(priceFrom, priceTo);
         double endPrice = Math.max(priceFrom, priceTo);
         // Perform the repository queries with pagination
-        Page<ProductItem> products = productItemRepository.findByMajorCategoryIdAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndStoreIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
+        Page<ProductItem> products = productItemRepository.findByMajorCategoryIdContainingIgnoreCaseAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndStoreIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(
                 majorCategory, categoryId, subCategoryId, storeId, keyword, keyword, startPrice, endPrice, startPrice, endPrice, pageable
         );
 

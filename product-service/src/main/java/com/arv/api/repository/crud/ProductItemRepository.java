@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface ProductItemRepository extends MongoRepository<ProductItem, String> {
     Optional<ProductItem> findOneById(String id);
 
-    Page<ProductItem> findByMajorCategoryIdAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndStoreIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(String majorCategoryId,String categoryId, String subCategoryId, String storeId, String productName, String description, double sStartPrice, double sEndPrice, double mStartPrice, double mEndPrice, Pageable pageable);
+    Page<ProductItem> findByMajorCategoryIdContainingIgnoreCaseAndCategoryIdContainingIgnoreCaseAndSubCategoryIdContainingIgnoreCaseAndStoreIdContainingIgnoreCaseAndProductNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndSellingPriceBetweenOrMrpPriceBetween(String majorCategoryId, String categoryId, String subCategoryId, String storeId, String productName, String description, double sStartPrice, double sEndPrice, double mStartPrice, double mEndPrice, Pageable pageable);
 
     Page<ProductItem> findAllByIdIn(String[] ids, Pageable pageable);
 

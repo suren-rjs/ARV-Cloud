@@ -13,11 +13,16 @@ import com.arv.auth.model.rest.Products;
 import com.arv.auth.service.CartService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.*;
 
 @RestController
@@ -50,38 +55,51 @@ public class CartController {
 
         ProductList productList = (ProductList) globalCommonService.postForObject(uriWithParams, entity, ProductList.class);
         List<ProductItem> orderCartList = new ArrayList<>();
-        productList.getProducts().forEach(productItem -> {
-            Integer orderQty = cartList.stream()
-                    .filter(cart -> cart.getProductId().equals(productItem.getId()))
-                    .findFirst()
-                    .map(Cart::getQty)
-                    .orElse(0);
-            String orderVariant = cartList.stream()
-                    .filter(cart -> cart.getProductId().equals(productItem.getId()))
-                    .findFirst()
-                    .map(Cart::getVariant)
-                    .orElse("");
-            ProductVariant productVariant = productItem.getProductVariants().stream().filter(productVariant1 -> productVariant1.getProductVariant().equals(orderVariant)).findFirst().orElse(null);
-            productItem.setOrderQty(orderQty);
-            productItem.setOrderProductVariation(orderVariant);
-            if (productVariant != null) {
-                productItem.setOrderPrice(productVariant.getPrice());
-            }
-        });
         cartList.forEach(cart -> {
             ProductItem productItem = productList.getProducts().stream().filter(product -> product.getId().equals(cart.getProductId())).findFirst().orElse(null);
+
             if (productItem != null) {
-                productItem.setOrderProductVariation(cart.getVariant());
-                productItem.setOrderQty(cart.getQty());
-                ProductVariant productVariant = productItem.getProductVariants().stream().filter(productVariant1 -> productVariant1.getProductVariant().equals(cart.getVariant())).findFirst().orElse(null);
+                ProductItem orderedItem = new ProductItem(
+                        productItem.getStoreId(),
+                        productItem.getMajorCategoryId(),
+                        productItem.getId(),
+                        productItem.getProductName(),
+                        productItem.getDescription(),
+                        productItem.getScannerId(),
+                        productItem.getBrand(),
+                        productItem.getCategoryNameOrId(),
+                        productItem.getSubCategoryNameOrId(),
+                        productItem.getSubCategoryTags(),
+                        productItem.getProductCategory(),
+                        productItem.getProductSubCategory(),
+                        productItem.getProductVariation(),
+                        productItem.getMrpPrice(),
+                        productItem.getSellingPrice(),
+                        productItem.getStock(),
+                        productItem.getDiscount(),
+                        productItem.getTags(),
+                        productItem.getImage(),
+                        productItem.getImageFile(),
+                        productItem.getCreatedDate(),
+                        productItem.getProductVariants(),
+                        productItem.getColor(),
+                        productItem.getSize(),
+                        productItem.getOrderQty(),
+                        productItem.getOrderProductVariation(),
+                        productItem.getOrderPrice()
+                );
+                orderedItem.setOrderProductVariation(cart.getVariant());
+                orderedItem.setOrderQty(cart.getQty());
+                ProductVariant productVariant = orderedItem.getProductVariants().stream().filter(productVariant1 -> productVariant1.getProductVariant().equals(cart.getVariant())).findFirst().orElse(null);
                 if (productVariant != null) {
-                    productItem.setOrderPrice(productVariant.getPrice());
+                    orderedItem.setOrderPrice(productVariant.getPrice());
                 }
-                orderCartList.add(productItem);
+                orderCartList.add(orderedItem);
             }
         });
+        ProductList orderedProductList = new ProductList(orderCartList, 0, orderCartList.size(), 0);
 
-        return globalCommonService.getResponseOfObject(Optional.of(orderCartList), HttpStatus.OK);
+        return globalCommonService.getResponseOfObject(Optional.of(orderedProductList), HttpStatus.OK);
     }
 
     @GetMapping("/cartValue")
