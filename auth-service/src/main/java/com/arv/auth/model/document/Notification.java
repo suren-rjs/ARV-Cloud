@@ -11,14 +11,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document("notification")
 public class Notification {
-    @Id
-    private String id;
-    @NotNull
     String title;
-    @NotNull
     String message;
-    @NotNull
-    String userId;
 }

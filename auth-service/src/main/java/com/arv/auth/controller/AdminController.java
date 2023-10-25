@@ -1,9 +1,13 @@
 package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
+import com.arv.auth.model.document.DeviceToken;
+import com.arv.auth.model.document.Notification;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.rest.UsersList;
+import com.arv.auth.repository.crud.DeviceTokenRepository;
 import com.arv.auth.repository.crud.UserRepository;
+import com.arv.auth.repository.data.FcmNotificationRepository;
 import com.arv.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("All")
@@ -29,6 +34,11 @@ public class AdminController {
     private GlobalCommonService globalCommonService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    protected FcmNotificationRepository fcm;
+
+    @Autowired
+    private DeviceTokenRepository deviceTokenRepository;
 
     @Autowired
     private UserService userService;
@@ -76,6 +86,17 @@ public class AdminController {
         HttpStatus responseStatus = HttpStatus.OK;
 
         responseMessage = userService.changeActiveStatusById(id);
+        return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
+    }
+
+    @PostMapping("/notification")
+    public ResponseEntity<?> sendNotification(@RequestBody Notification notification) {
+        String responseMessage = "Sending notification... ";
+        HttpStatus responseStatus = HttpStatus.OK;
+        try {
+            fcm.sendNotification(notification.getTitle(), notification.getMessage());
+        } catch (Exception e) {
+        }
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
     }
 }

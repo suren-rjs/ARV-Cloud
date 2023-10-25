@@ -2,9 +2,13 @@ package com.arv.auth.controller;
 
 import com.arv.auth.config.utils.JwtTokenProvider;
 import com.arv.auth.helper.GlobalCommonService;
+import com.arv.auth.model.document.DeviceToken;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.dto.request.auth.SignUp;
+import com.arv.auth.repository.crud.DeviceTokenRepository;
 import com.arv.auth.repository.crud.UserRepository;
+import com.arv.auth.repository.data.FcmNotificationRepository;
+import com.arv.auth.service.DeviceTokenService;
 import com.arv.auth.service.UserService;
 import com.arv.auth.model.dto.request.auth.Login;
 import com.arv.auth.model.dto.response.auth.JsonToken;
@@ -36,6 +40,12 @@ public class AuthenticationController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    protected DeviceTokenService deviceTokenService;
+
+    @Autowired
+    protected FcmNotificationRepository fcm;
 
     @PostMapping(value = "/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Login login) {
@@ -98,10 +108,16 @@ public class AuthenticationController {
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
     }
 
-//    @PostMapping("/verify-email")
-//    public ResponseEntity<?> verifyEmail() {
-//        String responseMessage = "Verification Success!";
-//        HttpStatus responseStatus = HttpStatus.OK;
-//        return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
-//    }
+    @PostMapping("/device-token")
+    public ResponseEntity<?> addDeviceToken(@RequestBody DeviceToken deviceToken) {
+        String responseMessage = "Subscription Completed!";
+        HttpStatus responseStatus = HttpStatus.OK;
+        deviceTokenService.save(deviceToken);
+        try {
+            fcm.subscribe(deviceToken.getDeviceToken());
+        } catch (Exception e) {
+            responseMessage = "Subscription failed";
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
+    }
 }
