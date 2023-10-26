@@ -3,7 +3,6 @@ package com.arv.api.model.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,5 +19,6 @@ public class StoreDTO {
     private String longitude;
     private String locationLink;
     private Double minDeliveryPrice;
+    private Double extensivePrice;
     private String tags;
 }

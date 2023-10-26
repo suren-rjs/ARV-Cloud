@@ -27,5 +27,6 @@ public class StoreInfo {
     private String longitude;
     private String locationLink;
     private Double minDeliveryPrice;
+    private Double extensivePrice;
     private String tags;
 }
