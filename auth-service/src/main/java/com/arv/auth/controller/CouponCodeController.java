@@ -21,7 +21,7 @@ import java.util.Optional;
 @RequestMapping(value = "/couponCode", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CouponCodeController {
     @Value("${product.pageSize}")
-    private int PAGE_COUNT;
+    protected int PAGE_COUNT;
 
     @Autowired
     protected CouponCodeService couponCodeService;

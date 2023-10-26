@@ -50,6 +50,7 @@ public class UserService implements UserDtoRepository, UserDetailsService {
         user.setProfileName(signUp.getUsername());
         user.setPassword(bCryptPasswordEncoder.encode(signUp.getUid()));
         user.setActiveStatus(true);
+        user.setIsFirstOrder(true);
 
         List<String> roles = new ArrayList<>();
 

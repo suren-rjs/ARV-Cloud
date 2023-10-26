@@ -1,9 +1,11 @@
 package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
+import com.arv.auth.model.document.User;
 import com.arv.auth.model.dto.request.order.OrderDTO;
 import com.arv.auth.model.enums.*;
 import com.arv.auth.service.OrderService;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,15 +37,9 @@ public class OrderController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "WAITING_FOR_PAYMENT") PaymentStatus paymentStatus,
             @RequestParam(required = false, defaultValue = "") String orderId
-//            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false, defaultValue = "") Date fromOrderedDateDate,
 
     ) {
         try {
-//            fromOrderedDateDate = fromOrderedDateDate == null ? new Date(2010, Calendar.JANUARY, 1) : fromOrderedDateDate;
-//            toOrderedDateDate = toOrderedDateDate == null ? new Date() : toOrderedDateDate;
-//            if (fromOrderedDateDate.after(toOrderedDateDate)) {
-//                fromOrderedDateDate = new Date(2010, Calendar.JANUARY, 1);
-//            }
             return globalCommonService.getResponseOfObject(Optional.of(orderService.findByPaymentStatusAndOrderIdContaining(paymentStatus, orderId, page)), HttpStatus.OK);
         } catch (Exception e) {
             return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -55,15 +51,8 @@ public class OrderController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "WAITING") OrderStatus orderStatus,
             @RequestParam(required = false, defaultValue = "") String orderId
-//            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @RequestParam(required = false, defaultValue = "") Date fromOrderedDateDate,
-
     ) {
         try {
-//            fromOrderedDateDate = fromOrderedDateDate == null ? new Date(2010, Calendar.JANUARY, 1) : fromOrderedDateDate;
-//            toOrderedDateDate = toOrderedDateDate == null ? new Date() : toOrderedDateDate;
-//            if (fromOrderedDateDate.after(toOrderedDateDate)) {
-//                fromOrderedDateDate = new Date(2010, Calendar.JANUARY, 1);
-//            }
             return globalCommonService.getResponseOfObject(Optional.of(orderService.findByOrderStatusAndOrderIdContaining(orderStatus, orderId, page)), HttpStatus.OK);
         } catch (Exception e) {
             return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -123,12 +112,12 @@ public class OrderController {
     }
 
     @PostMapping("/outForDelivery/{id}")
-    private ResponseEntity<?> outForDelivery(@PathVariable String id) {
+    private ResponseEntity<?> outForDelivery(@PathVariable String id, @RequestParam String employeeId) {
         HttpStatus status;
         String message = "Order status updated!";
         try {
             status = HttpStatus.OK;
-            orderService.outForDelivery(id);
+            orderService.outForDelivery(id, employeeId);
         } catch (Exception e) {
             status = HttpStatus.NOT_ACCEPTABLE;
             message = "Something went wrong!, unable to process order!";

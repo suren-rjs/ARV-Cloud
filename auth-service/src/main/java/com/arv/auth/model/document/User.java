@@ -47,4 +47,6 @@ public class User {
     private Boolean activeStatus;
     @JsonIgnore
     private Date createdDate;
+    @JsonIgnore
+    private Boolean isFirstOrder;
 }

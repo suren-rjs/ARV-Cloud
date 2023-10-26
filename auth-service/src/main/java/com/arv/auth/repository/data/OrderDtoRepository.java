@@ -26,7 +26,7 @@ public interface OrderDtoRepository {
 
     void placeOrder(String orderId);
 
-    void outForDelivery(String orderId);
+    void outForDelivery(String orderId, String employeeId);
 
     void completeDelivery(String orderId);
 

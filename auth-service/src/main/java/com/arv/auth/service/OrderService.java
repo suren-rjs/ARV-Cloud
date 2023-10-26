@@ -1,8 +1,7 @@
 package com.arv.auth.service;
 
 import com.arv.auth.helper.GlobalCommonService;
-import com.arv.auth.model.document.Address;
-import com.arv.auth.model.document.Order;
+import com.arv.auth.model.document.*;
 import com.arv.auth.model.dto.request.cart.PreserveStock;
 import com.arv.auth.model.dto.request.order.OrderDTO;
 import com.arv.auth.model.dto.request.order.OrderItemDetail;
@@ -13,7 +12,10 @@ import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.model.enums.*;
 import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.repository.crud.AddressRepository;
+import com.arv.auth.repository.crud.CouponCodeRepository;
 import com.arv.auth.repository.crud.OrderRepository;
+import com.arv.auth.repository.data.CouponCodeDtoRepository;
+import com.arv.auth.repository.data.IEmployeeDto;
 import com.arv.auth.repository.data.OrderDtoRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +34,7 @@ import org.webjars.NotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -47,6 +50,11 @@ public class OrderService implements OrderDtoRepository {
 
     @Autowired
     protected AddressRepository addressRepository;
+
+    @Autowired
+    protected IEmployeeDto employeeRepository;
+    @Autowired
+    protected CouponCodeRepository couponCodeRepository;
 
     @Override
     public OrderList findAllByUserId(int pageNumber) {
@@ -95,7 +103,9 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public void newOrder(OrderDTO orderDTO) {
-        String userId = globalCommonService.getCurrentUser().getId();
+        User user = globalCommonService.getCurrentUser();
+        Boolean isFirstOrder = user.getIsFirstOrder() != null && user.getIsFirstOrder();
+        String userId = user.getId();
         Address deliveryAddress = addressRepository.findOneByIdAndUserId(orderDTO.getAddressId(), userId).orElseThrow(() -> new NotFoundException("Invalid address id"));
         Order order = (Order) globalCommonService.convertObject(orderDTO, Order.class);
         AtomicReference<Double> orderValue = new AtomicReference<>(0.0);
@@ -174,6 +184,18 @@ public class OrderService implements OrderDtoRepository {
         }
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
         OrderStatement orderStatement = (OrderStatement) globalCommonService.postForObject(GATEWAY + "/public/getStatment", entity, OrderStatement.class);
+
+        // Apply Coupon code
+        String coupon = order.getCouponCode();
+        CouponCode couponCode = couponCodeRepository.findOneByCouponCode(coupon).orElse(null);
+        double discountPercentage = 0.0;
+        if (couponCode != null && couponCode.getMinOrderPrice() >= order.getOrderValue() && couponCode.getMaxUsage() >= couponCode.getCurrentUsage()) {
+            discountPercentage = couponCode.getDiscountPercentage();
+            couponCode.setMaxUsage(couponCode.getCurrentUsage() + 1);
+            couponCodeRepository.save(couponCode);
+        }
+        Double discount = (order.getOrderValue() / 100) * discountPercentage;
+        order.setDiscountedPrice(discount);
         order.setOrderValue(orderStatement.getTotalAmount());
         order.setTotalAmount(orderStatement.getTotalAmount() + order.getDeliveryCharge());
         order.setFinalPrice(order.getTotalAmount() - order.getDiscountedPrice());
@@ -231,10 +253,15 @@ public class OrderService implements OrderDtoRepository {
     }
 
     @Override
-    public void outForDelivery(String orderId) {
+    public void outForDelivery(String orderId, String employeeId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
+        Optional<Employee> employee = employeeRepository.findOneById(employeeId);
+        if (!employee.isPresent()) {
+            throw new NotFoundException("Invalid employee id");
+        }
+        order.setDeliveryMan(employee.get());
         orderRepository.save(order);
     }
 

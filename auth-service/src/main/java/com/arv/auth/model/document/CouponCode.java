@@ -25,6 +25,7 @@ public class CouponCode {
     private Double minOrderPrice = 0.0;
     @NonNull
     private Double maxDiscountPrice = 0.0;
-    private int maxUsage = 0;
+    private Integer maxUsage = 0;
+    private Integer currentUsage = 0;
 }
 

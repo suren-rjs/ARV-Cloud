@@ -68,4 +68,5 @@ public class Order {
     private Double discountedPrice;
     private Double couponDiscountPercentage;
     private Double finalPrice;
+    private Employee deliveryMan;
 }
