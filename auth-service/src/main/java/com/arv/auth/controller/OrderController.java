@@ -1,11 +1,9 @@
 package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
-import com.arv.auth.model.document.User;
 import com.arv.auth.model.dto.request.order.OrderDTO;
 import com.arv.auth.model.enums.*;
 import com.arv.auth.service.OrderService;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

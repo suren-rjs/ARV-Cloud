@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,11 +44,15 @@ public class UserService implements UserDtoRepository, UserDetailsService {
 
     @Override
     public void save(SignUp signUp) {
+        CustomByCrypt customByCrypt = CustomByCrypt.getInstance();
         User user = new User();
         user.setUsername(signUp.getPhone());
         user.setPhone(signUp.getPhone());
         user.setEmail(signUp.getEmail());
         user.setProfileName(signUp.getUsername());
+        SecretKey secretKey = customByCrypt.generateAESKey();
+        user.setTokenPassword(customByCrypt.encrypt(signUp.getUid(), secretKey));
+        user.setSecretKey(secretKey);
         user.setPassword(bCryptPasswordEncoder.encode(signUp.getUid()));
         user.setActiveStatus(true);
         user.setIsFirstOrder(true);

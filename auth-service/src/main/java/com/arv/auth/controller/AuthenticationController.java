@@ -5,9 +5,9 @@ import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.DeviceToken;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.dto.request.auth.SignUp;
-import com.arv.auth.repository.crud.DeviceTokenRepository;
 import com.arv.auth.repository.crud.UserRepository;
 import com.arv.auth.repository.data.FcmNotificationRepository;
+import com.arv.auth.service.CustomByCrypt;
 import com.arv.auth.service.DeviceTokenService;
 import com.arv.auth.service.UserService;
 import com.arv.auth.model.dto.request.auth.Login;
@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.SecretKey;
 import java.util.Optional;
 import java.util.Timer;
 
@@ -64,6 +65,25 @@ public class AuthenticationController {
             tokenResponseEntity = new ResponseEntity<>(new JsonToken(token), HttpStatus.ACCEPTED);
         } catch (Exception e) {
             tokenResponseEntity = globalCommonService.getResponseEntityByMessageAndStatus("Invalid username or password.", HttpStatus.NOT_FOUND);
+        }
+
+        return tokenResponseEntity;
+    }
+
+    @PostMapping(value = "/refresh-token")
+    public ResponseEntity<?> getRefreshToken() {
+        User user = globalCommonService.getCurrentUser();
+        Authentication authentication;
+        CustomByCrypt customByCrypt = CustomByCrypt.getInstance();
+        final String token;
+        ResponseEntity<?> tokenResponseEntity;
+        try {
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getPhone(), customByCrypt.decrypt(user.getTokenPassword(), user.getSecretKey())));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            token = jwtTokenProvider.generateToken(authentication);
+            tokenResponseEntity = new ResponseEntity<>(new JsonToken(token), HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            tokenResponseEntity = globalCommonService.getResponseEntityByMessageAndStatus("Unable to get token password", HttpStatus.NOT_FOUND);
         }
 
         return tokenResponseEntity;
