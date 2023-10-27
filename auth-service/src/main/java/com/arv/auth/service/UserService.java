@@ -1,7 +1,9 @@
 package com.arv.auth.service;
 
 import com.arv.auth.model.document.User;
+import com.arv.auth.model.document.UserSecret;
 import com.arv.auth.model.dto.request.auth.SignUp;
+import com.arv.auth.repository.crud.IUserSecret;
 import com.arv.auth.repository.data.UserDtoRepository;
 import com.arv.auth.repository.crud.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class UserService implements UserDtoRepository, UserDetailsService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    protected IUserSecret userSecret;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userRepository.findOneByUsername(username);
@@ -50,9 +55,9 @@ public class UserService implements UserDtoRepository, UserDetailsService {
         user.setPhone(signUp.getPhone());
         user.setEmail(signUp.getEmail());
         user.setProfileName(signUp.getUsername());
-        SecretKey secretKey = customByCrypt.generateAESKey();
-        user.setTokenPassword(customByCrypt.encrypt(signUp.getUid(), secretKey));
-        user.setSecretKey(secretKey);
+        String secret = customByCrypt.generateSaltPhrase();
+        user.setPhrase(customByCrypt.encrypt(signUp.getUid(), secret));
+        userSecret.save(new UserSecret(null, signUp.getPhone(), secret));
         user.setPassword(bCryptPasswordEncoder.encode(signUp.getUid()));
         user.setActiveStatus(true);
         user.setIsFirstOrder(true);

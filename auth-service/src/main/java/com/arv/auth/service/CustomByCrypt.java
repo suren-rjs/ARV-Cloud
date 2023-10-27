@@ -1,16 +1,13 @@
 package com.arv.auth.service;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import javax.crypto.KeyGenerator;
-import java.util.Base64;
+import java.util.Random;
+
 
 @SuppressWarnings("ALL")
 public class CustomByCrypt {
-    private static final int SHIFT_KEY = 5;
 
     private static CustomByCrypt instance;
+
 
     private CustomByCrypt() {
     }
@@ -22,75 +19,38 @@ public class CustomByCrypt {
         return instance;
     }
 
-    private static String encrypt(String originalText, int shift) {
-        StringBuilder result = new StringBuilder();
+    public static String encrypt(String plaintext, String passphrase) {
+        StringBuilder ciphertext = new StringBuilder();
 
-        for (int i = 0; i < originalText.length(); i++) {
-            char c = originalText.charAt(i);
-            if (Character.isLetter(c)) {
-                char base = Character.isLowerCase(c) ? 'a' : 'A';
-                c = (char) (base + (c - base + shift) % 26);
-            }
-            result.append(c);
+        for (int i = 0; i < plaintext.length(); i++) {
+            char c = plaintext.charAt(i);
+            char shifted = (char) (c + passphrase.length());
+            ciphertext.append(shifted);
         }
 
-        return result.toString();
+        return ciphertext.toString();
     }
 
-    // Decryption function
-    private static String decrypt(String originalText, int shift) {
-        return encrypt(originalText, 26 - shift);
-    }
+    public static String decrypt(String ciphertext, String passphrase) {
+        StringBuilder plaintext = new StringBuilder();
 
-    public static String encrypt(String word, SecretKey secretKey) {
-        String encryptedText;
-        try {
-            encryptedText = encryptAES(word, secretKey);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            encryptedText = encrypt(word, SHIFT_KEY);
+        for (int i = 0; i < ciphertext.length(); i++) {
+            char c = ciphertext.charAt(i);
+            char shifted = (char) (c - passphrase.length());
+            plaintext.append(shifted);
         }
 
-        return encryptedText;
+        return plaintext.toString();
     }
 
-    public static String decrypt(String word, SecretKey secretKey) {
-        String decryptedText;
-        try {
-            decryptedText = decryptAES(word, secretKey);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            decryptedText = decrypt(word, SHIFT_KEY);
+    public String generateSaltPhrase() {
+        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=-{}:;'<>?/`~";
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i <= 50; i++) {
+            sb.append(characters.charAt(random.nextInt(characters.length())));
         }
-        return decryptedText;
-    }
-
-
-    public static SecretKey generateAESKey() {
-        KeyGenerator keyGenerator;
-        try {
-            keyGenerator = KeyGenerator.getInstance("AES");
-        } catch (Exception e) {
-            keyGenerator = null;
-        }
-        assert keyGenerator != null;
-        keyGenerator.init(256);
-        return keyGenerator.generateKey();
-    }
-
-    public static String encryptAES(String plaintext, SecretKey secretKey) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-
-    public static String decryptAES(String encryptedText, SecretKey secretKey) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-        byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
-        return new String(decryptedBytes, StandardCharsets.UTF_8);
+        return sb.toString();
     }
 }
 

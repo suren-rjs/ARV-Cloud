@@ -9,7 +9,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.crypto.SecretKey;
 import java.util.List;
 import java.util.Date;
 
@@ -32,7 +31,7 @@ public class User {
     private String password;
     @NonNull
     @JsonIgnore
-    private String tokenPassword;
+    private String phrase;
     @Indexed
     private String email;
     @NonNull
@@ -53,6 +52,4 @@ public class User {
     private Date createdDate;
     @JsonIgnore
     private Boolean isFirstOrder;
-    @JsonIgnore
-    private SecretKey secretKey;
 }

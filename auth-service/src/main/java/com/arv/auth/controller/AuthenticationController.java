@@ -4,7 +4,9 @@ import com.arv.auth.config.utils.JwtTokenProvider;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.DeviceToken;
 import com.arv.auth.model.document.User;
+import com.arv.auth.model.document.UserSecret;
 import com.arv.auth.model.dto.request.auth.SignUp;
+import com.arv.auth.repository.crud.IUserSecret;
 import com.arv.auth.repository.crud.UserRepository;
 import com.arv.auth.repository.data.FcmNotificationRepository;
 import com.arv.auth.service.CustomByCrypt;
@@ -22,7 +24,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.crypto.SecretKey;
 import java.util.Optional;
 import java.util.Timer;
 
@@ -48,6 +49,9 @@ public class AuthenticationController {
     @Autowired
     protected FcmNotificationRepository fcm;
 
+    @Autowired
+    protected IUserSecret userSecret;
+
     @PostMapping(value = "/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Login login) {
         if (login.getPhone().contains("@") && globalCommonService.validateEmail(login.getPhone()))
@@ -70,7 +74,7 @@ public class AuthenticationController {
         return tokenResponseEntity;
     }
 
-    @PostMapping(value = "/refresh-token")
+    @GetMapping(value = "/refresh-token")
     public ResponseEntity<?> getRefreshToken() {
         User user = globalCommonService.getCurrentUser();
         Authentication authentication;
@@ -78,12 +82,14 @@ public class AuthenticationController {
         final String token;
         ResponseEntity<?> tokenResponseEntity;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getPhone(), customByCrypt.decrypt(user.getTokenPassword(), user.getSecretKey())));
+            UserSecret secret = userSecret.findOneByUsername(user.getPhone()).orElse(null);
+            if (secret == null) throw new RuntimeException("Unable to get Token");
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getPhone(), customByCrypt.decrypt(user.getPhrase(), secret.getSecret())));
             SecurityContextHolder.getContext().setAuthentication(authentication);
             token = jwtTokenProvider.generateToken(authentication);
             tokenResponseEntity = new ResponseEntity<>(new JsonToken(token), HttpStatus.ACCEPTED);
         } catch (Exception e) {
-            tokenResponseEntity = globalCommonService.getResponseEntityByMessageAndStatus("Unable to get token password", HttpStatus.NOT_FOUND);
+            tokenResponseEntity = globalCommonService.getResponseEntityByMessageAndStatus("Unable to get token password : " + e.getMessage(), HttpStatus.NOT_FOUND);
         }
 
         return tokenResponseEntity;
