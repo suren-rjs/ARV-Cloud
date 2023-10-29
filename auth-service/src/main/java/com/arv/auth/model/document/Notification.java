@@ -14,4 +14,5 @@ import javax.validation.constraints.NotNull;
 public class Notification {
     String title;
     String message;
+    String username;
 }

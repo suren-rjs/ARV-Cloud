@@ -1,6 +1,7 @@
 package com.arv.auth.service;
 
 import com.arv.auth.model.document.DeviceToken;
+import com.arv.auth.model.document.Notification;
 import com.arv.auth.repository.crud.DeviceTokenRepository;
 import com.arv.auth.repository.data.FcmNotificationRepository;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -38,5 +39,20 @@ public class FCMService implements FcmNotificationRepository {
             } catch (FirebaseMessagingException ignored) {
             }
         });
+    }
+
+    @Override
+    public void sendNotificationByUser(Notification notification) throws RuntimeException {
+        DeviceToken deviceToken = deviceTokenRepository.findOneByUsername(notification.getUsername()).orElse(null);
+        if (deviceToken == null) throw new RuntimeException("Unable to send notification");
+        Message msg = Message.builder()
+                .putData("title", notification.getTitle())
+                .putData("body", notification.getMessage())
+                .setToken(deviceToken.getDeviceToken())
+                .build();
+        try {
+            fcm.send(msg);
+        } catch (FirebaseMessagingException ignored) {
+        }
     }
 }

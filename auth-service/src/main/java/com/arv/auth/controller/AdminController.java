@@ -1,7 +1,6 @@
 package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
-import com.arv.auth.model.document.DeviceToken;
 import com.arv.auth.model.document.Notification;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.rest.UsersList;
@@ -20,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("All")
@@ -96,6 +94,18 @@ public class AdminController {
         try {
             fcm.sendNotification(notification.getTitle(), notification.getMessage());
         } catch (Exception e) {
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
+    }
+
+    @PostMapping("/notify-user")
+    public ResponseEntity<?> motifyUser(@RequestBody Notification notification) {
+        String responseMessage = "Sending notification!";
+        HttpStatus responseStatus = HttpStatus.OK;
+        try {
+            fcm.sendNotificationByUser(notification);
+        } catch (Exception e) {
+            responseMessage = "Subscription failed";
         }
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
     }
