@@ -6,6 +6,9 @@ import java.util.List;
 
 public class EmployeeList extends CollectionList<Employee> {
     public EmployeeList(List<Employee> content, int page, int numberOfElements, int totalPage) {
-        super();
+        super.list = content;
+        super.currentPage = page;
+        super.totalCount = numberOfElements;
+        super.totalPages = totalPage;
     }
 }

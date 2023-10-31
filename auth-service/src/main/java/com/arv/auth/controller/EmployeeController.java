@@ -30,10 +30,9 @@ public class EmployeeController {
     protected GlobalCommonService globalCommonService;
 
     @GetMapping("/all")
-    private ResponseEntity<?> getAll(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "") String isSearch) {
+    private ResponseEntity<?> getAll(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "false") Boolean isSearch) {
         Pageable pageable = PageRequest.of(page, PAGE_COUNT);
-        if (Objects.equals(isSearch, "")) {
-
+        if (isSearch) {
             Page<Employee> employees = employeeService.searchByNameContainingIgnoreCasePhoneContaining(keyword, pageable);
             return globalCommonService.getResponseOfObject(Optional.of(new EmployeeList(employees.getContent(), page, employees.getNumberOfElements(), globalCommonService.getTotalPage(employees.getTotalPages()))), HttpStatus.OK);
         } else {
