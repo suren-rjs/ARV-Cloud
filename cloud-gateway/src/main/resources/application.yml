@@ -1,6 +1,8 @@
 spring:
   application:
     name: ARV-CLOUD-GATEWAY
+  profiles:
+    active: production
   cloud:
     gateway:
       default-filters:
