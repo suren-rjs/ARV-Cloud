@@ -1,10 +1,6 @@
 package com.arv.auth.model.rest;
 
 import com.arv.auth.model.document.Employee;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 

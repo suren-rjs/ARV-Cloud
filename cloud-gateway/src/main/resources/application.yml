@@ -25,7 +25,7 @@ spring:
         - id: arv-identity-service
           uri: lb://ARV-IDENTITY-SERVICE
           predicates:
-            - Path=/help, /auth/**, /swagger-ui/**, /v3/**, /address, /address/**, /wishlist, /wishlist/**, /cart, /cart/**, /orders, /orders/**, /features, /features/**, /homeBanner, /homeBanner/**, /api, /api/**, /couponCode, /couponCode/**
+            - Path=/help, /auth/**, /swagger-ui/**, /v3/**, /address, /address/**, /wishlist, /wishlist/**, /cart, /cart/**, /orders, /orders/**, /features, /features/**, /homeBanner, /homeBanner/**, /api, /api/**, /couponCode, /couponCode/**, /employee, /employee/**
           filters:
             - name: CircuitBreaker
               args:

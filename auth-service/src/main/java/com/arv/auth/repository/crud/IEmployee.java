@@ -8,6 +8,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface IEmployee extends MongoRepository<Employee, String> {
-    Page<Employee> findByNameContainingIgnoreCaseOrPhoneContaining(String keyword, Pageable pageable);
-    List<Employee> findByNameContainingIgnoreCaseOrPhoneContaining(String keyword);
+    Page<Employee> findByNameContainingIgnoreCaseOrPhoneContaining(String name, String phone, Pageable pageable);
+    List<Employee> findByNameContainingIgnoreCaseOrPhoneContaining(String name, String phone);
 }

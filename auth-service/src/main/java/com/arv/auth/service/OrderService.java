@@ -14,7 +14,7 @@ import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.repository.crud.AddressRepository;
 import com.arv.auth.repository.crud.CouponCodeRepository;
 import com.arv.auth.repository.crud.OrderRepository;
-import com.arv.auth.repository.data.CouponCodeDtoRepository;
+import com.arv.auth.repository.data.FcmNotificationRepository;
 import com.arv.auth.repository.data.IEmployeeDto;
 import com.arv.auth.repository.data.OrderDtoRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,6 +55,9 @@ public class OrderService implements OrderDtoRepository {
     protected IEmployeeDto employeeRepository;
     @Autowired
     protected CouponCodeRepository couponCodeRepository;
+
+    @Autowired
+    protected FcmNotificationRepository notificationRepo;
 
     @Override
     public OrderList findAllByUserId(int pageNumber) {
@@ -131,6 +134,11 @@ public class OrderService implements OrderDtoRepository {
         order.setCouponCode(orderDTO.getCouponCode());
         try {
             Order preservedOrder = preserveOrder(order, orderDTO.getAccessToken());
+            try {
+                Notification notification = new Notification("Order got placed!", "Waiting for seller to process your order", order.getUserId());
+                notificationRepo.sendNotificationByUser(notification);
+            } catch (Exception ignored) {
+            }
             orderRepository.save(preservedOrder);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -249,6 +257,11 @@ public class OrderService implements OrderDtoRepository {
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.ORDER_PLACED);
         order.setPlacedDate(new Date());
+        try {
+            Notification notification = new Notification("Order has been placed!", "Order processing by seller!", order.getUserId());
+            notificationRepo.sendNotificationByUser(notification);
+        } catch (Exception ignored) {
+        }
         orderRepository.save(order);
     }
 
@@ -261,6 +274,11 @@ public class OrderService implements OrderDtoRepository {
         if (!employee.isPresent()) {
             throw new NotFoundException("Invalid employee id");
         }
+        try {
+            Notification notification = new Notification("Out for delivery!", "Waiting for delivery person!", order.getUserId());
+            notificationRepo.sendNotificationByUser(notification);
+        } catch (Exception ignored) {
+        }
         order.setDeliveryMan(employee.get());
         orderRepository.save(order);
     }
@@ -271,6 +289,11 @@ public class OrderService implements OrderDtoRepository {
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.DELIVERED);
         order.setOrderedDate(new Date());
+        try {
+            Notification notification = new Notification("Delivery completed!", "Thank you for choosing us!", order.getUserId());
+            notificationRepo.sendNotificationByUser(notification);
+        } catch (Exception ignored) {
+        }
         orderRepository.save(order);
     }
 

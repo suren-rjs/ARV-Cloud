@@ -22,12 +22,12 @@ public class EmployeeService implements IEmployeeDto {
     }
 
     @Override
-    public Page<Employee> searchByNameContainingIgnoreCasePhoneContaining(String name, Pageable pageable) {
-        return iEmployee.findByNameContainingIgnoreCaseOrPhoneContaining(name, pageable);
+    public Page<Employee> searchByNameContainingIgnoreCasePhoneContaining(String keyword, Pageable pageable) {
+        return iEmployee.findByNameContainingIgnoreCaseOrPhoneContaining(keyword, keyword, pageable);
     }
     @Override
-    public List<Employee> searchByNameContainingIgnoreCasePhoneContaining(String name) {
-        return iEmployee.findByNameContainingIgnoreCaseOrPhoneContaining(name);
+    public List<Employee> searchByNameContainingIgnoreCasePhoneContaining(String keyword) {
+        return iEmployee.findByNameContainingIgnoreCaseOrPhoneContaining(keyword, keyword);
     }
 
     @Override
