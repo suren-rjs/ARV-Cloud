@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -32,12 +31,17 @@ public class EmployeeController {
     @GetMapping("/all")
     private ResponseEntity<?> getAll(@RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "false") Boolean isSearch) {
         Pageable pageable = PageRequest.of(page, PAGE_COUNT);
-        if (isSearch) {
+        if (!isSearch) {
             Page<Employee> employees = employeeService.searchByNameContainingIgnoreCasePhoneContaining(keyword, pageable);
             return globalCommonService.getResponseOfObject(Optional.of(new EmployeeList(employees.getContent(), page, employees.getNumberOfElements(), globalCommonService.getTotalPage(employees.getTotalPages()))), HttpStatus.OK);
         } else {
-            return globalCommonService.getResponseOfObject(Optional.of(employeeService.searchByNameContainingIgnoreCasePhoneContaining(keyword)), HttpStatus.OK);
+            return globalCommonService.getResponseOfObject(Optional.of(new EmployeeList(employeeService.searchByNameContainingIgnoreCasePhoneContaining(keyword), 0, 0, 0)), HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/{id}")
+    private ResponseEntity<?> getById(@PathVariable String id) {
+        return globalCommonService.getResponseOfObject(Optional.of(employeeService.findOneById(id)), HttpStatus.OK);
     }
 
     @PostMapping
