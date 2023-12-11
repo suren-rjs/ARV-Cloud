@@ -11,9 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings("All")
@@ -57,23 +55,10 @@ public class PublicController {
 
     @PostMapping("/getStatment")
     public ResponseEntity<?> getProductImages(@RequestBody Orders orders) {
-        List<ProductItem> productsList = productService.findProductByIdsIn(orders.getList().stream().map(CartDto::getProductId).toArray(String[]::new));
         Double totalAmount = 0.0;
-        Map<String, Integer> productQuantityMap = new HashMap<>();
 
-        orders.getList().forEach(cartDto -> {
-            String productId = cartDto.getProductId();
-            int quantity = cartDto.getQty();
-            productQuantityMap.put(productId, productQuantityMap.getOrDefault(productId, 0) + quantity);
-        });
-
-        int i = 0;
-        for (ProductItem productItem : productsList) {
-            String productId = productItem.getId();
-            int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), orders.getList().get(i++).getVariant());
-            Double sellingPriceByVarient = productItem.getSellingPrice()[variantIndex];
-            int quantity = productQuantityMap.getOrDefault(productId, 0);
-            totalAmount += quantity * sellingPriceByVarient;
+        for (CartDto order : orders.getList()){
+            totalAmount += (order.getItemPrice() * order.getQty());
         }
 
         return new ResponseEntity<>(totalAmount, HttpStatus.OK);
