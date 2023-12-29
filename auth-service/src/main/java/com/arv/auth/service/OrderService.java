@@ -10,7 +10,6 @@ import com.arv.auth.model.dto.request.order.Orders;
 import com.arv.auth.model.dto.response.OrderStatement;
 import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.model.enums.*;
-import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.repository.crud.AddressRepository;
 import com.arv.auth.repository.crud.CouponCodeRepository;
 import com.arv.auth.repository.crud.OrderRepository;
@@ -114,12 +113,8 @@ public class OrderService implements OrderDtoRepository {
         AtomicReference<Double> orderValue = new AtomicReference<>(0.0);
         if (orderDTO.getPaymentMode() == PaymentMode.COD) {
             order.getOrderItems().forEach(detail -> {
-                ProductItem productItem = (ProductItem) globalCommonService.getForObject(GATEWAY + "/products/" + detail.getProductId(), ProductItem.class);
-                int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), detail.getVariant());
-                Double price = productItem.getSellingPrice()[variantIndex];
+                Double price = detail.getItemPrice();
                 detail.setItemTotalPrice(detail.getQty() * price);
-                detail.setItemPrice(price);
-                detail.setItemName(productItem.getProductName());
                 orderValue.updateAndGet(itemTotal -> itemTotal + detail.getItemTotalPrice());
             });
         }
@@ -270,6 +265,9 @@ public class OrderService implements OrderDtoRepository {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
+        Date today = new Date();
+        Date tomorrow = new Date(today.getTime() + (1000 * 60 * 60 * 24));
+        order.setExpectedDeliveryDate(tomorrow);
         Optional<Employee> employee = employeeRepository.findOneById(employeeId);
         if (!employee.isPresent()) {
             throw new NotFoundException("Invalid employee id");
@@ -288,7 +286,7 @@ public class OrderService implements OrderDtoRepository {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.DELIVERED);
-        order.setOrderedDate(new Date());
+        order.setDeliveredDate(new Date());
         try {
             Notification notification = new Notification("Delivery completed!", "Thank you for choosing us!", order.getUserId());
             notificationRepo.sendNotificationByUser(notification);

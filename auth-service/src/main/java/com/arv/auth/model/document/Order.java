@@ -2,6 +2,7 @@ package com.arv.auth.model.document;
 
 import com.arv.auth.model.dto.request.order.OrderItemDetail;
 import com.arv.auth.model.enums.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +11,6 @@ import lombok.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.util.Date;
 import java.util.List;
@@ -46,13 +45,13 @@ public class Order {
     private Boolean isCancelledOrder = false;
     @Indexed
     private Boolean isReturnOrder = false;
-    @Field(targetType = FieldType.STRING)
+    @JsonFormat(pattern = "EEE MMM dd HH:mm:ss zzz yyyy", locale = "en_US", timezone = "IST")
     private Date orderedDate;
-    @Field(targetType = FieldType.STRING)
+    @JsonFormat(pattern = "EEE MMM dd HH:mm:ss zzz yyyy", locale = "en_US", timezone = "IST")
     private Date placedDate;
-    @Field(targetType = FieldType.STRING)
+    @JsonFormat(pattern = "EEE MMM dd HH:mm:ss zzz yyyy", locale = "en_US", timezone = "IST")
     private Date expectedDeliveryDate;
-    @Field(targetType = FieldType.STRING)
+    @JsonFormat(pattern = "EEE MMM dd HH:mm:ss zzz yyyy", locale = "en_US", timezone = "IST")
     private Date deliveredDate;
     private Double orderValue;
     private Double deliveryCharge;

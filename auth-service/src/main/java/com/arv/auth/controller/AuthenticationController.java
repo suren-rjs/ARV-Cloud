@@ -7,6 +7,7 @@ import com.arv.auth.model.document.Notification;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.document.UserSecret;
 import com.arv.auth.model.dto.request.auth.SignUp;
+import com.arv.auth.model.rest.Username;
 import com.arv.auth.repository.crud.IUserSecret;
 import com.arv.auth.repository.crud.UserRepository;
 import com.arv.auth.repository.data.FcmNotificationRepository;
@@ -116,6 +117,29 @@ public class AuthenticationController {
     @GetMapping("/myProfile")
     public ResponseEntity<?> getCurrentUser() {
         return new ResponseEntity<>(globalCommonService.getCurrentUser(), HttpStatus.OK);
+    }
+
+    @GetMapping("/username")
+    public ResponseEntity<?> getUsername() {
+        User user = globalCommonService.getCurrentUser();
+        Username username = new Username(user.getProfileName());
+        return new ResponseEntity<>(globalCommonService.getCurrentUser(), HttpStatus.OK);
+    }
+
+    @PutMapping()
+    public ResponseEntity<?> updateUsername(@RequestBody Username username) {
+        String responseMessage;
+        HttpStatus responseStatus = HttpStatus.NOT_ACCEPTABLE;
+
+        User user = globalCommonService.getCurrentUser();
+        if (user != null) {
+            user.setProfileName(username.getUsername());
+            userRepository.save(user);
+            responseMessage = "User details updated !";
+        } else {
+            responseMessage = "Invalid userid " + username.getUsername();
+        }
+        return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
     }
 
     @PutMapping()

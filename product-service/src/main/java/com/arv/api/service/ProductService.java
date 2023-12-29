@@ -248,8 +248,13 @@ public class ProductService implements ProductDtoRepository {
         ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
         int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), variant);
         Integer[] stocks = productItem.getStock();
-        int stock = productItem.getStock()[variantIndex];
-        stocks[variantIndex] = stock - qty;
+        if(stocks.length-1 < variantIndex){
+            int stock = productItem.getStock()[0];
+            stocks[0] = stock - qty;
+        }else {
+            int stock = productItem.getStock()[variantIndex];
+            stocks[variantIndex] = stock - qty;
+        }
         productItem.setStock(stocks);
         productItemRepository.save(productItem);
     }
