@@ -142,23 +142,6 @@ public class AuthenticationController {
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
     }
 
-    @PutMapping()
-    public ResponseEntity<?> updateUser(@RequestBody User user) {
-        String responseMessage;
-        HttpStatus responseStatus = HttpStatus.NOT_ACCEPTABLE;
-
-        Optional<User> existUser = userRepository.findOneByUsername(user.getUsername());
-        if (existUser.isPresent()) {
-            User existUserDetails = existUser.get();
-            existUserDetails.setProfileName(user.getProfileName());
-            userRepository.save(existUserDetails);
-            responseMessage = "User details updated !";
-        } else {
-            responseMessage = "Invalid userid " + user.getUsername();
-        }
-        return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
-    }
-
     @PostMapping("/device-token")
     public ResponseEntity<?> addDeviceToken(@RequestBody DeviceToken deviceToken) {
         String responseMessage = "Subscription Completed!";
