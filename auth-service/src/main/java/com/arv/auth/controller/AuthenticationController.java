@@ -3,14 +3,15 @@ package com.arv.auth.controller;
 import com.arv.auth.config.utils.JwtTokenProvider;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.DeviceToken;
-import com.arv.auth.model.document.Notification;
 import com.arv.auth.model.document.User;
 import com.arv.auth.model.document.UserSecret;
+import com.arv.auth.model.dto.request.auth.ConfigDTO;
 import com.arv.auth.model.dto.request.auth.SignUp;
 import com.arv.auth.model.rest.Username;
 import com.arv.auth.repository.crud.IUserSecret;
 import com.arv.auth.repository.crud.UserRepository;
 import com.arv.auth.repository.data.FcmNotificationRepository;
+import com.arv.auth.service.ConfigService;
 import com.arv.auth.service.CustomByCrypt;
 import com.arv.auth.service.DeviceTokenService;
 import com.arv.auth.service.UserService;
@@ -53,6 +54,8 @@ public class AuthenticationController {
 
     @Autowired
     protected IUserSecret userSecret;
+
+    @Autowired protected ConfigService configService;
 
     @PostMapping(value = "/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Login login) {
@@ -133,7 +136,7 @@ public class AuthenticationController {
 
         User user = globalCommonService.getCurrentUser();
         if (user != null) {
-            user.setProfileName(username.getUsername());
+            user.setProfileName(username.getUsername().isEmpty() || username.getUsername() == null ? "" : username.getUsername());
             userRepository.save(user);
             responseMessage = "User details updated !";
         } else {
@@ -146,6 +149,8 @@ public class AuthenticationController {
     public ResponseEntity<?> addDeviceToken(@RequestBody DeviceToken deviceToken) {
         String responseMessage = "Subscription Completed!";
         HttpStatus responseStatus = HttpStatus.OK;
+        User user = globalCommonService.getCurrentUser();
+        deviceToken.setUsername(user.getId());
         deviceTokenService.save(deviceToken);
         try {
             fcm.subscribe(deviceToken.getDeviceToken());
@@ -153,5 +158,20 @@ public class AuthenticationController {
             responseMessage = "Subscription failed";
         }
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
+    }
+
+    @GetMapping("/config")
+    public ResponseEntity<?> getConfig() {
+        return globalCommonService.getResponseOfObject(Optional.of(configService.findAll()), HttpStatus.OK);
+    }
+
+    @PostMapping("/config")
+    public ResponseEntity<?> addConfig(ConfigDTO configDTO) {
+        return globalCommonService.getResponseOfObject(Optional.of(configService.save(configDTO)), HttpStatus.OK);
+    }
+
+    @PutMapping("/config")
+    public ResponseEntity<?> updateConfig(ConfigDTO configDTO) {
+        return globalCommonService.getResponseOfObject(Optional.of(configService.updateByKey(configDTO)), HttpStatus.OK);
     }
 }

@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
+@SuppressWarnings("unused")
 public class OrderService implements OrderDtoRepository {
     @Value("${gateway.url}")
     protected String GATEWAY;
@@ -61,7 +62,8 @@ public class OrderService implements OrderDtoRepository {
     @Override
     public OrderList findAllByUserId(int pageNumber) {
         String userId = globalCommonService.getCurrentUser().getId();
-        Pageable pageable = PageRequest.of(pageNumber, 15);
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
+        Pageable pageable = PageRequest.of(pageNumber, Integer.MAX_VALUE, descendingSort);
         Page<Order> page = orderRepository.findAllByUserId(userId, pageable);
         List<Order> list = page.getContent();
         return new OrderList(list, pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
@@ -79,7 +81,7 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public OrderList findByOrderStatusAndOrderIdContaining(OrderStatus orderStatus, String orderId, int pageNumber) {
-        Sort descendingSort = Sort.by(Sort.Direction.ASC, "orderedDate");
+        Sort descendingSort = Sort.by(orderStatus == OrderStatus.WAITING ? Sort.Direction.ASC : Sort.Direction.DESC, "orderedDate");
         Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
         Page<Order> filteredOrders;
         if (Objects.equals(orderId, "")) {
@@ -238,7 +240,7 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public void cancelOrder(String orderId) {
-        if (!isExistsById(orderId)) throw new RuntimeException("Invalid id");
+        // if (!isExistsById(orderId)) throw new RuntimeException("Invalid id");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.CANCELLED);

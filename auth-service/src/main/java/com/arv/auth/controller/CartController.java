@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
+@SuppressWarnings("unused")
 @RequestMapping(value = "/cart", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CartController {
 
@@ -71,6 +72,7 @@ public class CartController {
                         productItem.getMrpPrice(),
                         productItem.getSellingPrice(),
                         productItem.getStock(),
+                        productItem.getVDiscount(),
                         productItem.getDiscount(),
                         productItem.getTags(),
                         productItem.getImage(),

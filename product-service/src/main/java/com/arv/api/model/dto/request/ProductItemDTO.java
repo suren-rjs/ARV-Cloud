@@ -58,6 +58,7 @@ public class ProductItemDTO {
     private Double[] mrpPrice;
     private Double[] sellingPrice;
     private Integer[] stock;
+    private Double[] vDiscount;
     private Double discount;
     private String tags;
 

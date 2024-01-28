@@ -8,12 +8,13 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.List;
 
 @Service
+@SuppressWarnings("unused")
 public class FCMService implements FcmNotificationRepository {
     @Autowired
     private FirebaseMessaging fcm;
@@ -26,19 +27,17 @@ public class FCMService implements FcmNotificationRepository {
     }
 
     @Override
+    @Async
     public void sendNotification(String title, String message) {
-        List<DeviceToken> tokens = deviceTokenRepository.findAll();
-        tokens.forEach(deviceToken -> {
-            Message msg = Message.builder()
-                    .putData("title", title)
-                    .putData("body", message)
-                    .setToken(deviceToken.getDeviceToken())
-                    .build();
-            try {
-                fcm.send(msg);
-            } catch (FirebaseMessagingException ignored) {
-            }
-        });
+
+        Message msg = Message.builder()
+                .setNotification(new com.google.firebase.messaging.Notification(title, message))
+                .setTopic("arv-notification")
+                .build();
+        try {
+            fcm.send(msg);
+        } catch (FirebaseMessagingException ignored) {
+        }
     }
 
     @Override
@@ -46,8 +45,7 @@ public class FCMService implements FcmNotificationRepository {
         DeviceToken deviceToken = deviceTokenRepository.findOneByUsername(notification.getUsername()).orElse(null);
         if (deviceToken == null) throw new RuntimeException("Unable to send notification");
         Message msg = Message.builder()
-                .putData("title", notification.getTitle())
-                .putData("body", notification.getMessage())
+                .setNotification(new com.google.firebase.messaging.Notification(notification.getTitle(), notification.getMessage()))
                 .setToken(deviceToken.getDeviceToken())
                 .build();
         try {

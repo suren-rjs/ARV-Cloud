@@ -56,6 +56,8 @@ public class ProductItem {
     @Indexed
     private Integer[] stock;
     @Indexed
+    private Double[] vDiscount;
+    @Indexed
     private Double discount;
     private String tags;
     private String imageUri;
