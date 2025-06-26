@@ -14,6 +14,5 @@ public class CartDto {
     private String productId;
     private String variant;
     private Integer qty;
-    @JsonIgnore
     private Double orderPrice;
 }

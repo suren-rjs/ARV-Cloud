@@ -32,8 +32,8 @@ public class CartService implements CartDtoRepository {
         if (cartRepository.existsByProductIdAndUserIdAndVariant(cartDto.getProductId(), user.getId(), item.getVariant())) {
             item = cartRepository.findByProductIdAndUserIdAndVariant(cartDto.getProductId(), user.getId(), item.getVariant());
             item.setQty(cartDto.getQty());
+            item.setOrderPrice(cartDto.getQty() * cartDto.getOrderPrice());
         }
-
         cartRepository.save(item);
     }
 

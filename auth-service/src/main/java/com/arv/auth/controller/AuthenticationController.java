@@ -4,10 +4,15 @@ import com.arv.auth.config.utils.JwtTokenProvider;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.DeviceToken;
 import com.arv.auth.model.document.User;
+import com.arv.auth.model.document.UserSecret;
+import com.arv.auth.model.dto.request.auth.ConfigDTO;
 import com.arv.auth.model.dto.request.auth.SignUp;
-import com.arv.auth.repository.crud.DeviceTokenRepository;
+import com.arv.auth.model.rest.Username;
+import com.arv.auth.repository.crud.IUserSecret;
 import com.arv.auth.repository.crud.UserRepository;
 import com.arv.auth.repository.data.FcmNotificationRepository;
+import com.arv.auth.service.ConfigService;
+import com.arv.auth.service.CustomByCrypt;
 import com.arv.auth.service.DeviceTokenService;
 import com.arv.auth.service.UserService;
 import com.arv.auth.model.dto.request.auth.Login;
@@ -47,6 +52,11 @@ public class AuthenticationController {
     @Autowired
     protected FcmNotificationRepository fcm;
 
+    @Autowired
+    protected IUserSecret userSecret;
+
+    @Autowired protected ConfigService configService;
+
     @PostMapping(value = "/login")
     public ResponseEntity<?> authenticateUser(@RequestBody Login login) {
         if (login.getPhone().contains("@") && globalCommonService.validateEmail(login.getPhone()))
@@ -64,6 +74,27 @@ public class AuthenticationController {
             tokenResponseEntity = new ResponseEntity<>(new JsonToken(token), HttpStatus.ACCEPTED);
         } catch (Exception e) {
             tokenResponseEntity = globalCommonService.getResponseEntityByMessageAndStatus("Invalid username or password.", HttpStatus.NOT_FOUND);
+        }
+
+        return tokenResponseEntity;
+    }
+
+    @GetMapping(value = "/refresh-token")
+    public ResponseEntity<?> getRefreshToken() {
+        User user = globalCommonService.getCurrentUser();
+        Authentication authentication;
+        CustomByCrypt customByCrypt = CustomByCrypt.getInstance();
+        final String token;
+        ResponseEntity<?> tokenResponseEntity;
+        try {
+            UserSecret secret = userSecret.findOneByUsername(user.getPhone()).orElse(null);
+            if (secret == null) throw new RuntimeException("Unable to get Token");
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getPhone(), customByCrypt.decrypt(user.getPhrase(), secret.getSecret())));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            token = jwtTokenProvider.generateToken(authentication);
+            tokenResponseEntity = new ResponseEntity<>(new JsonToken(token), HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            tokenResponseEntity = globalCommonService.getResponseEntityByMessageAndStatus("Unable to get token password : " + e.getMessage(), HttpStatus.NOT_FOUND);
         }
 
         return tokenResponseEntity;
@@ -91,19 +122,25 @@ public class AuthenticationController {
         return new ResponseEntity<>(globalCommonService.getCurrentUser(), HttpStatus.OK);
     }
 
+    @GetMapping("/username")
+    public ResponseEntity<?> getUsername() {
+        User user = globalCommonService.getCurrentUser();
+        Username username = new Username(user.getProfileName());
+        return new ResponseEntity<>(globalCommonService.getCurrentUser(), HttpStatus.OK);
+    }
+
     @PutMapping()
-    public ResponseEntity<?> updateUser(@RequestBody User user) {
+    public ResponseEntity<?> updateUsername(@RequestBody Username username) {
         String responseMessage;
         HttpStatus responseStatus = HttpStatus.NOT_ACCEPTABLE;
 
-        Optional<User> existUser = userRepository.findOneByUsername(user.getUsername());
-        if (existUser.isPresent()) {
-            User existUserDetails = existUser.get();
-            existUserDetails.setProfileName(user.getProfileName());
-            userRepository.save(existUserDetails);
+        User user = globalCommonService.getCurrentUser();
+        if (user != null) {
+            user.setProfileName(username.getUsername().isEmpty() || username.getUsername() == null ? "" : username.getUsername());
+            userRepository.save(user);
             responseMessage = "User details updated !";
         } else {
-            responseMessage = "Invalid userid " + user.getUsername();
+            responseMessage = "Invalid userid " + username.getUsername();
         }
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
     }
@@ -112,6 +149,8 @@ public class AuthenticationController {
     public ResponseEntity<?> addDeviceToken(@RequestBody DeviceToken deviceToken) {
         String responseMessage = "Subscription Completed!";
         HttpStatus responseStatus = HttpStatus.OK;
+        User user = globalCommonService.getCurrentUser();
+        deviceToken.setUsername(user.getId());
         deviceTokenService.save(deviceToken);
         try {
             fcm.subscribe(deviceToken.getDeviceToken());
@@ -119,5 +158,20 @@ public class AuthenticationController {
             responseMessage = "Subscription failed";
         }
         return globalCommonService.getResponseEntityByMessageAndStatus(responseMessage, responseStatus);
+    }
+
+    @GetMapping("/config")
+    public ResponseEntity<?> getConfig() {
+        return globalCommonService.getResponseOfObject(Optional.of(configService.findAll()), HttpStatus.OK);
+    }
+
+    @PostMapping("/config")
+    public ResponseEntity<?> addConfig(ConfigDTO configDTO) {
+        return globalCommonService.getResponseOfObject(Optional.of(configService.save(configDTO)), HttpStatus.OK);
+    }
+
+    @PutMapping("/config")
+    public ResponseEntity<?> updateConfig(ConfigDTO configDTO) {
+        return globalCommonService.getResponseOfObject(Optional.of(configService.updateByKey(configDTO)), HttpStatus.OK);
     }
 }

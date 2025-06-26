@@ -10,11 +10,10 @@ import com.arv.auth.model.dto.request.order.Orders;
 import com.arv.auth.model.dto.response.OrderStatement;
 import com.arv.auth.model.dto.response.ResponseMessage;
 import com.arv.auth.model.enums.*;
-import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.repository.crud.AddressRepository;
 import com.arv.auth.repository.crud.CouponCodeRepository;
 import com.arv.auth.repository.crud.OrderRepository;
-import com.arv.auth.repository.data.CouponCodeDtoRepository;
+import com.arv.auth.repository.data.FcmNotificationRepository;
 import com.arv.auth.repository.data.IEmployeeDto;
 import com.arv.auth.repository.data.OrderDtoRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,6 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
+@SuppressWarnings("unused")
 public class OrderService implements OrderDtoRepository {
     @Value("${gateway.url}")
     protected String GATEWAY;
@@ -56,10 +56,14 @@ public class OrderService implements OrderDtoRepository {
     @Autowired
     protected CouponCodeRepository couponCodeRepository;
 
+    @Autowired
+    protected FcmNotificationRepository notificationRepo;
+
     @Override
     public OrderList findAllByUserId(int pageNumber) {
         String userId = globalCommonService.getCurrentUser().getId();
-        Pageable pageable = PageRequest.of(pageNumber, 15);
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "orderedDate");
+        Pageable pageable = PageRequest.of(pageNumber, Integer.MAX_VALUE, descendingSort);
         Page<Order> page = orderRepository.findAllByUserId(userId, pageable);
         List<Order> list = page.getContent();
         return new OrderList(list, pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
@@ -77,7 +81,7 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public OrderList findByOrderStatusAndOrderIdContaining(OrderStatus orderStatus, String orderId, int pageNumber) {
-        Sort descendingSort = Sort.by(Sort.Direction.ASC, "orderedDate");
+        Sort descendingSort = Sort.by(orderStatus == OrderStatus.WAITING ? Sort.Direction.ASC : Sort.Direction.DESC, "orderedDate");
         Pageable pageable = PageRequest.of(pageNumber, 15, descendingSort);
         Page<Order> filteredOrders;
         if (Objects.equals(orderId, "")) {
@@ -111,12 +115,8 @@ public class OrderService implements OrderDtoRepository {
         AtomicReference<Double> orderValue = new AtomicReference<>(0.0);
         if (orderDTO.getPaymentMode() == PaymentMode.COD) {
             order.getOrderItems().forEach(detail -> {
-                ProductItem productItem = (ProductItem) globalCommonService.getForObject(GATEWAY + "/products/" + detail.getProductId(), ProductItem.class);
-                int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), detail.getVariant());
-                Double price = productItem.getSellingPrice()[variantIndex];
+                Double price = detail.getItemPrice();
                 detail.setItemTotalPrice(detail.getQty() * price);
-                detail.setItemPrice(price);
-                detail.setItemName(productItem.getProductName());
                 orderValue.updateAndGet(itemTotal -> itemTotal + detail.getItemTotalPrice());
             });
         }
@@ -131,6 +131,11 @@ public class OrderService implements OrderDtoRepository {
         order.setCouponCode(orderDTO.getCouponCode());
         try {
             Order preservedOrder = preserveOrder(order, orderDTO.getAccessToken());
+            try {
+                Notification notification = new Notification("Order got placed!", "Waiting for seller to process your order", order.getUserId());
+                notificationRepo.sendNotificationByUser(notification);
+            } catch (Exception ignored) {
+            }
             orderRepository.save(preservedOrder);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -235,7 +240,7 @@ public class OrderService implements OrderDtoRepository {
 
     @Override
     public void cancelOrder(String orderId) {
-        if (!isExistsById(orderId)) throw new RuntimeException("Invalid id");
+        // if (!isExistsById(orderId)) throw new RuntimeException("Invalid id");
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.CANCELLED);
@@ -249,6 +254,11 @@ public class OrderService implements OrderDtoRepository {
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.ORDER_PLACED);
         order.setPlacedDate(new Date());
+        try {
+            Notification notification = new Notification("Order has been placed!", "Order processing by seller!", order.getUserId());
+            notificationRepo.sendNotificationByUser(notification);
+        } catch (Exception ignored) {
+        }
         orderRepository.save(order);
     }
 
@@ -257,9 +267,17 @@ public class OrderService implements OrderDtoRepository {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
+        Date today = new Date();
+        Date tomorrow = new Date(today.getTime() + (1000 * 60 * 60 * 24));
+        order.setExpectedDeliveryDate(tomorrow);
         Optional<Employee> employee = employeeRepository.findOneById(employeeId);
         if (!employee.isPresent()) {
             throw new NotFoundException("Invalid employee id");
+        }
+        try {
+            Notification notification = new Notification("Out for delivery!", "Waiting for delivery person!", order.getUserId());
+            notificationRepo.sendNotificationByUser(notification);
+        } catch (Exception ignored) {
         }
         order.setDeliveryMan(employee.get());
         orderRepository.save(order);
@@ -270,7 +288,12 @@ public class OrderService implements OrderDtoRepository {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Invalid id"));
         order.setOrderStatus(OrderStatus.DELIVERED);
-        order.setOrderedDate(new Date());
+        order.setDeliveredDate(new Date());
+        try {
+            Notification notification = new Notification("Delivery completed!", "Thank you for choosing us!", order.getUserId());
+            notificationRepo.sendNotificationByUser(notification);
+        } catch (Exception ignored) {
+        }
         orderRepository.save(order);
     }
 

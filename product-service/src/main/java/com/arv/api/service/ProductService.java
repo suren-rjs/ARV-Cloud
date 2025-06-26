@@ -63,9 +63,12 @@ public class ProductService implements ProductDtoRepository {
         productItem.setSellingPrice(productItemDto.getSellingPrice());
         productItem.setMrpPrice(productItemDto.getMrpPrice());
         productItem.setStock(productItemDto.getStock());
+        productItem.setVDiscount(productItemDto.getVDiscount());
         productItem.setDiscount(productItemDto.getDiscount());
         productItem.setTags(productItemDto.getTags());
         productItem.setScannerId(productItemDto.getScannerId());
+        productItem.setBrand(productItemDto.getBrand());
+        productItem.setProductVariation(productItemDto.getProductVariation());
 
         String categoryNameOrId = productItemDto.getCategoryNameOrId();
         String subCategoryNameOrId = productItemDto.getSubCategoryNameOrId() == null ? categoryNameOrId : productItemDto.getSubCategoryNameOrId();
@@ -81,7 +84,9 @@ public class ProductService implements ProductDtoRepository {
         productItem.setProductCategory(productCategory);
         productItem.setProductSubCategory(productSubCategory);
 
-        productItem.setImageUri(uploadFile(convertBytesToMux(productItemDto.getImage(), id, "image/jpeg"), id));
+        if (productItemDto.getImage() != null) {
+            productItem.setImageUri(uploadFile(convertBytesToMux(productItemDto.getImage(), id, "image/jpeg"), id));
+        }
         productItem.setTags(productItemDto.getTags());
         productItem.setId(id);
         productItem.setIsEnabled(true);
@@ -118,6 +123,7 @@ public class ProductService implements ProductDtoRepository {
             productItem.setMrpPrice(updatedDetails.getMrpPrice());
             productItem.setStock(updatedDetails.getStock());
             productItem.setDiscount(updatedDetails.getDiscount());
+            productItem.setVDiscount(updatedDetails.getVDiscount());
             productItem.setTags(updatedDetails.getTags());
             productItem.setScannerId(updatedDetails.getScannerId());
             productItem.setBrand(updatedDetails.getBrand());
@@ -183,6 +189,7 @@ public class ProductService implements ProductDtoRepository {
             productItem.setSellingPrice(productItemDTO.getSellingPrice());
             productItem.setMrpPrice(productItemDTO.getMrpPrice());
             productItem.setStock(productItemDTO.getStock());
+            productItem.setVDiscount(productItemDTO.getVDiscount());
             productItem.setDiscount(productItemDTO.getDiscount());
             productItem.setTags(productItemDTO.getTags());
             productItem.setScannerId(productItemDTO.getScannerId());
@@ -232,11 +239,17 @@ public class ProductService implements ProductDtoRepository {
     }
 
     public ProductList findProductByIdsIn(String[] ids, int page) {
-        Page<ProductItem> products = productItemRepository.findAllByIdIn(ids, PageRequest.of(page, PAGE_COUNT));
-        // Get the content of the pages as filtered products
-        List<ProductItem> filteredProducts = new ArrayList<>(products.getContent());
+        Optional<List<ProductItem>> products = productItemRepository.findAllByIdIn(ids);
+        List<ProductItem> filteredProducts = new ArrayList<>();
+        if(products.isPresent()){
+            filteredProducts = new ArrayList<>(products.get());
+        }
 
-        return new ProductList(filteredProducts, page, products.getTotalElements(), globalCommonService.getTotalPage(products.getTotalPages()));
+//        Page<ProductItem> products = productItemRepository.findAllByIdIn(ids, PageRequest.of(page, PAGE_COUNT));
+        // Get the content of the pages as filtered products
+//        List<ProductItem> filteredProducts = new ArrayList<>(products.getContent());
+
+        return new ProductList(filteredProducts, page, filteredProducts.size(), globalCommonService.getTotalPage(page));
     }
 
     public List<ProductItem> findProductByIdsIn(String[] ids) {
@@ -248,8 +261,13 @@ public class ProductService implements ProductDtoRepository {
         ProductItem productItem = productItemRepository.findOneById(id).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
         int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), variant);
         Integer[] stocks = productItem.getStock();
-        int stock = productItem.getStock()[variantIndex];
-        stocks[variantIndex] = stock - qty;
+        if(stocks.length-1 < variantIndex){
+            int stock = productItem.getStock()[0];
+            stocks[0] = stock - qty;
+        }else {
+            int stock = productItem.getStock()[variantIndex];
+            stocks[variantIndex] = stock - qty;
+        }
         productItem.setStock(stocks);
         productItemRepository.save(productItem);
     }

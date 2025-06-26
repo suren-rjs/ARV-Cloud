@@ -13,19 +13,15 @@ import com.arv.auth.model.rest.Products;
 import com.arv.auth.service.CartService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.*;
 
 @RestController
+@SuppressWarnings("unused")
 @RequestMapping(value = "/cart", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CartController {
 
@@ -76,6 +72,7 @@ public class CartController {
                         productItem.getMrpPrice(),
                         productItem.getSellingPrice(),
                         productItem.getStock(),
+                        productItem.getVDiscount(),
                         productItem.getDiscount(),
                         productItem.getTags(),
                         productItem.getImage(),
@@ -105,38 +102,11 @@ public class CartController {
     @GetMapping("/cartValue")
     private ResponseEntity<?> getCartValue() throws JsonProcessingException {
         List<Cart> cartList = cartService.findAll();
-        String[] productIds = cartList.stream().map(Cart::getProductId).toArray(String[]::new);
-        String[] variants = cartList.stream().map(Cart::getVariant).toArray(String[]::new);
-
-        String uriWithParams = gatewayUrl + "/public/listAll";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // Set the request body
-        ObjectMapper mapper = new ObjectMapper();
-        String requestJson = mapper.writeValueAsString(new Products(productIds));
-        HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
-
-        ProductItem[] productList = (ProductItem[]) globalCommonService.postForObject(uriWithParams, entity, ProductItem[].class);
-
-        Map<String, Integer> productQuantityMap = new HashMap<>();
-
-        cartList.forEach(cartDto -> {
-            String productId = cartDto.getProductId();
-            int quantity = cartDto.getQty();
-            productQuantityMap.put(productId, productQuantityMap.getOrDefault(productId, 0) + quantity);
-        });
-
+        Double[] totalPrice = cartList.stream().map(Cart::getOrderPrice).toArray(Double[]::new);
         double totalAmount = 0.0;
-        int i = 0;
-        for (ProductItem productItem : productList) {
-            String productId = productItem.getId();
-            int variantIndex = globalCommonService.findIndex(productItem.getProductVariation(), variants[i++]);
-            if (variantIndex == -1) continue;
-            Double sellingPriceByVariant = productItem.getSellingPrice()[variantIndex];
-            int quantity = productQuantityMap.getOrDefault(productId, 0);
-            totalAmount += quantity * sellingPriceByVariant;
+        for (Double price : totalPrice) {
+            if(price == null) price = 0.0;
+            totalAmount += price;
         }
 
         return globalCommonService.getResponseOfObject(Optional.of(new Total(0.0, totalAmount)), HttpStatus.OK);

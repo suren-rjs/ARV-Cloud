@@ -29,9 +29,11 @@ public class User {
     @NonNull
     @JsonIgnore
     private String password;
+    @NonNull
+    @JsonIgnore
+    private String phrase;
     @Indexed
     private String email;
-    @NonNull
     @Indexed
     private String profileName;
     private String profileImage;

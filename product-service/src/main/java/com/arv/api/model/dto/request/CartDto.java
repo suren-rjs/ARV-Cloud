@@ -11,4 +11,6 @@ public class CartDto {
     private String productId;
     private String variant;
     private Integer qty;
+    private Double itemPrice;
+    private Double itemTotalPrice;
 }

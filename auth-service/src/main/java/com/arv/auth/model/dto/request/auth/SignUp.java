@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SignUp {
     private String phone;
-    private String username;
+    private String username = "";
     private String uid;
-    private UserType userType;
+    private UserType userType = UserType.CUSTOMER;
     private String email;
 }
