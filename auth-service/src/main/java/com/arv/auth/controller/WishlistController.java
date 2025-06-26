@@ -1,10 +1,13 @@
 package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
+import com.arv.auth.model.document.User;
 import com.arv.auth.model.document.Wishlist;
 import com.arv.auth.model.dto.request.wishlist.WishlistDto;
 import com.arv.auth.model.rest.ProductList;
 import com.arv.auth.model.rest.Products;
+import com.arv.auth.repository.crud.UserRepository;
+import com.arv.auth.service.MostRecent;
 import com.arv.auth.service.WishlistService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,26 +16,32 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 @RestController
 @RequestMapping(value = "/wishlist", produces = MediaType.APPLICATION_JSON_VALUE)
 public class WishlistController {
 
+    @Value("${recent.wishlist-count}")
+    protected int wishlistCount;
     @Value("${gateway.url}")
-    private String gatewayUrl;
+    protected String gatewayUrl;
     @Autowired
-    private WishlistService wishlistService;
+    protected WishlistService wishlistService;
 
     @Autowired
-    private GlobalCommonService globalCommonService;
+    protected GlobalCommonService globalCommonService;
+    @Autowired
+    protected UserRepository userRepository;
 
     @GetMapping
     private ResponseEntity<?> getAllFromWishlist(@RequestParam(required = false, defaultValue = "0") int pageNumber) throws JsonProcessingException {
         String[] productIds = wishlistService.findAll().stream().map(Wishlist::getProductId).toArray(String[]::new);
 
-        String uriWithParams = gatewayUrl+"/public/list?page=" + pageNumber;
+        String uriWithParams = gatewayUrl + "/public/list?page=" + pageNumber;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -52,6 +61,7 @@ public class WishlistController {
         try {
             if (Objects.equals(wishlistDto.getProductId(), "")) throw new RuntimeException("Invalid product id");
             wishlistService.save(wishlistDto);
+            recordWishList(wishlistDto.getProductId());
         } catch (Exception e) {
             message = e.getMessage();
             status = HttpStatus.NOT_ACCEPTABLE;
@@ -79,5 +89,14 @@ public class WishlistController {
         HttpStatus status = HttpStatus.OK;
         wishlistService.deleteAll();
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
+    }
+
+    private void recordWishList(String id) {
+        User user = globalCommonService.getCurrentUser();
+        List<String> views = user.getRecentWishLists();
+        MostRecent mostRecent = new MostRecent(views, wishlistCount);
+        mostRecent.addElement(id);
+        user.setRecentWishLists(mostRecent.getRecentElements());
+        userRepository.save(user);
     }
 }

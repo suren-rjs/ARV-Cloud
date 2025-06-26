@@ -3,6 +3,11 @@ package com.arv.auth.controller;
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.document.Cart;
 import com.arv.auth.model.dto.request.cart.CartDto;
+import com.arv.auth.model.dto.request.cart.ProductVariant;
+import com.arv.auth.model.dto.response.CartItemsList;
+import com.arv.auth.model.dto.response.Count;
+import com.arv.auth.model.dto.response.Total;
+import com.arv.auth.model.rest.ProductItem;
 import com.arv.auth.model.rest.ProductList;
 import com.arv.auth.model.rest.Products;
 import com.arv.auth.service.CartService;
@@ -13,11 +18,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
+@SuppressWarnings("unused")
 @RequestMapping(value = "/cart", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CartController {
 
@@ -46,15 +50,78 @@ public class CartController {
         HttpEntity<String> entity = new HttpEntity<>(requestJson, headers);
 
         ProductList productList = (ProductList) globalCommonService.postForObject(uriWithParams, entity, ProductList.class);
-        productList.getProducts().forEach(productItem -> {
-            Integer orderQty = cartList.stream()
-                    .filter(cart -> cart.getProductId().equals(productItem.getId()))
-                    .findFirst()
-                    .map(Cart::getQty)
-                    .orElse(0);
-            productItem.setOrderQty(orderQty);
+        List<ProductItem> orderCartList = new ArrayList<>();
+        cartList.forEach(cart -> {
+            ProductItem productItem = productList.getProducts().stream().filter(product -> product.getId().equals(cart.getProductId())).findFirst().orElse(null);
+
+            if (productItem != null) {
+                ProductItem orderedItem = new ProductItem(
+                        productItem.getStoreId(),
+                        productItem.getMajorCategoryId(),
+                        productItem.getId(),
+                        productItem.getProductName(),
+                        productItem.getDescription(),
+                        productItem.getScannerId(),
+                        productItem.getBrand(),
+                        productItem.getCategoryNameOrId(),
+                        productItem.getSubCategoryNameOrId(),
+                        productItem.getSubCategoryTags(),
+                        productItem.getProductCategory(),
+                        productItem.getProductSubCategory(),
+                        productItem.getProductVariation(),
+                        productItem.getMrpPrice(),
+                        productItem.getSellingPrice(),
+                        productItem.getStock(),
+                        productItem.getVDiscount(),
+                        productItem.getDiscount(),
+                        productItem.getTags(),
+                        productItem.getImage(),
+                        productItem.getImageFile(),
+                        productItem.getCreatedDate(),
+                        productItem.getProductVariants(),
+                        productItem.getColor(),
+                        productItem.getSize(),
+                        productItem.getOrderQty(),
+                        productItem.getOrderProductVariation(),
+                        productItem.getOrderPrice()
+                );
+                orderedItem.setOrderProductVariation(cart.getVariant());
+                orderedItem.setOrderQty(cart.getQty());
+                ProductVariant productVariant = orderedItem.getProductVariants().stream().filter(productVariant1 -> productVariant1.getProductVariant().equals(cart.getVariant())).findFirst().orElse(null);
+                if (productVariant != null) {
+                    orderedItem.setOrderPrice(productVariant.getPrice());
+                }
+                orderCartList.add(orderedItem);
+            }
         });
-        return globalCommonService.getResponseOfObject(Optional.of(productList), HttpStatus.OK);
+        ProductList orderedProductList = new ProductList(orderCartList, 0, orderCartList.size(), 0);
+
+        return globalCommonService.getResponseOfObject(Optional.of(orderedProductList), HttpStatus.OK);
+    }
+
+    @GetMapping("/cartValue")
+    private ResponseEntity<?> getCartValue() throws JsonProcessingException {
+        List<Cart> cartList = cartService.findAll();
+        Double[] totalPrice = cartList.stream().map(Cart::getOrderPrice).toArray(Double[]::new);
+        double totalAmount = 0.0;
+        for (Double price : totalPrice) {
+            if(price == null) price = 0.0;
+            totalAmount += price;
+        }
+
+        return globalCommonService.getResponseOfObject(Optional.of(new Total(0.0, totalAmount)), HttpStatus.OK);
+    }
+
+    @GetMapping("/idAndCount")
+    private ResponseEntity<?> getCartCount() {
+        CartItemsList cartItemsList = cartService.findAllAndCount();
+        return globalCommonService.getResponseOfObject(Optional.of(cartItemsList), HttpStatus.OK);
+    }
+
+    @GetMapping("/cartCount")
+    private ResponseEntity<?> getCartItemCountById(@RequestParam(defaultValue = "") String productId, @RequestParam(defaultValue = "") String variant) {
+        Count itemCount = new Count(cartService.findCountByIdAndVariant(productId, variant));
+        return globalCommonService.getResponseOfObject(Optional.of(itemCount), HttpStatus.OK);
     }
 
     @PostMapping
@@ -72,12 +139,12 @@ public class CartController {
     }
 
     @DeleteMapping
-    private ResponseEntity<?> deleteFromCart(String id) {
+    private ResponseEntity<?> deleteFromCart(String id, String variant) {
         String message = "Product has been removed from cart";
         HttpStatus status = HttpStatus.OK;
         try {
             if (Objects.equals(id, "")) throw new RuntimeException("Invalid product id");
-            cartService.delete(id);
+            cartService.delete(id, variant);
         } catch (Exception e) {
             message = e.getMessage();
             status = HttpStatus.NOT_ACCEPTABLE;

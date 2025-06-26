@@ -8,9 +8,13 @@ import java.util.List;
 public interface CartRepository extends MongoRepository<Cart, String> {
     void deleteByIdAndUserId(String id, String userId);
 
+    Cart findByIdAndUserId(String id, String userId);
+
     void deleteAllByUserId(String id);
 
     List<Cart> findAllByUserId(String id);
 
-    boolean existsByProductIdAndUserId(String id, String userId);
+    boolean existsByProductIdAndUserIdAndVariant(String id, String userId, String variant);
+
+    Cart findByProductIdAndUserIdAndVariant(String productId, String id, String variant);
 }

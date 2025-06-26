@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -28,9 +29,11 @@ public class User {
     @NonNull
     @JsonIgnore
     private String password;
+    @NonNull
+    @JsonIgnore
+    private String phrase;
     @Indexed
     private String email;
-    @NonNull
     @Indexed
     private String profileName;
     private String profileImage;
@@ -39,5 +42,13 @@ public class User {
     @Indexed
     private List<String> roles;
     @JsonIgnore
+    private List<String> recentViews;
+    @JsonIgnore
+    private List<String> recentWishLists;
+    @JsonIgnore
     private Boolean activeStatus;
+    @JsonIgnore
+    private Date createdDate;
+    @JsonIgnore
+    private Boolean isFirstOrder;
 }

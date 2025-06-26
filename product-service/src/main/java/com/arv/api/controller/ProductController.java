@@ -1,8 +1,9 @@
 package com.arv.api.controller;
 
 import com.arv.api.helper.GlobalCommonService;
-import com.arv.api.model.dto.request.product.BulkUpload;
-import com.arv.api.model.dto.request.product.ProductItemDTO;
+import com.arv.api.model.dto.request.PreserveStock;
+import com.arv.api.model.dto.request.ProductItemDTO;
+import com.arv.api.model.dto.request.ProductStatus;
 import com.arv.api.service.ProductService;
 import com.arv.api.service.utils.MultipartFileToXLSXConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +41,22 @@ public class ProductController {
     public ResponseEntity<?> bulkUpload(MultipartHttpServletRequest request) {
         try {
             String storeId = request.getParameter("storeId");
+            String majorCategoryId = request.getParameter("majorCategoryId");
             MultipartFile xmlFile = request.getFile("xmlFile");
-            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId);
+            System.out.println("majorCategory Id : " + majorCategoryId);
+            List<ProductItemDTO> productItemDTOList = multipartFileToXLSXConverter.convert(xmlFile, storeId, majorCategoryId);
             try {
+                System.out.println("Conversion completed");
                 productService.saveAll(productItemDTOList);
+                System.out.println("Uploaded ... ");
             } catch (Exception e) {
+                System.out.println("Exception is : " + e.getMessage());
                 return globalCommonService.getResponseEntityByMessageAndStatus("Exception while save : " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
             }
 
             return globalCommonService.getResponseEntityByMessageAndStatus("Products Uploaded successfully!", HttpStatus.CREATED);
         } catch (Exception e) {
+            System.out.println("Exception is " + e.getMessage());
             return globalCommonService.getResponseEntityByMessageAndStatus("Unable to upload " + e.toString(), HttpStatus.NOT_ACCEPTABLE);
         }
     }
@@ -75,7 +82,7 @@ public class ProductController {
         try {
             productService.deleteById(id);
         } catch (Exception e) {
-            message = "invalid id";
+            message = e.getMessage();
             response = HttpStatus.NOT_ACCEPTABLE;
         }
 
@@ -94,5 +101,41 @@ public class ProductController {
         }
 
         return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @PostMapping("/preserve")
+    public ResponseEntity<?> preserveOrder(@RequestBody PreserveStock preserveStock) {
+        String message;
+        HttpStatus response = HttpStatus.OK;
+        try {
+            message = "Stock preserved for order!";
+            productService.preserveOrder(preserveStock.getProductId(), preserveStock.getQty(), preserveStock.getVariant());
+        } catch (Exception e) {
+            message = "Unable to preerve product quantity";
+            response = HttpStatus.NOT_ACCEPTABLE;
+        }
+
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @PostMapping("/unpreserve")
+    public ResponseEntity<?> unpreserve(@RequestBody PreserveStock preserveStock) {
+        String message;
+        HttpStatus response = HttpStatus.OK;
+        try {
+            message = "Restock successfully added!";
+            productService.unPreserve(preserveStock.getProductId(), preserveStock.getQty(), preserveStock.getVariant());
+        } catch (Exception e) {
+            message = "Unable to restock product quantity";
+            response = HttpStatus.NOT_ACCEPTABLE;
+        }
+
+        return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @PostMapping("/changeStatus")
+    public ResponseEntity<?> getProductPriceByVariant(@RequestBody ProductStatus status) {
+        productService.changeStatus(status.getProductId(), status.getValue());
+        return globalCommonService.getResponseEntityByMessageAndStatus("Status has been changed", HttpStatus.OK);
     }
 }

@@ -1,36 +1,52 @@
 package com.arv.api.service.utils;
 
 import com.arv.api.helper.PictureDataMultipartFile;
-import com.arv.api.model.dto.request.product.ProductItemDTO;
+import com.arv.api.model.dto.request.ProductItemDTO;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MultipartFileToXLSXConverter {
-    public List<ProductItemDTO> convert(MultipartFile multipartFile, String storeId) throws Exception {
+
+
+    public List<ProductItemDTO> convert(MultipartFile multipartFile, String storeId, String majorCategoryId) throws Exception {
         try (InputStream inputStream = multipartFile.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
             String outputFilePath = "uploaded-file.xlsx";
+
             try (Workbook outputWorkbook = new XSSFWorkbook()) {
-                List<?> images = workbook.getSheetAt(0).getWorkbook().getAllPictures();
+                Sheet sheet = workbook.getSheetAt(0);
+                List<XSSFPicture> images = new ArrayList<>();
                 for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                     Sheet inputSheet = workbook.getSheetAt(i);
                     Sheet outputSheet = outputWorkbook.createSheet(inputSheet.getSheetName());
                     copySheet(inputSheet, outputSheet);
                 }
 
+                XSSFDrawing drawing = (XSSFDrawing) sheet.createDrawingPatriarch();
+                for (XSSFShape shape : drawing.getShapes()) {
+                    if (shape instanceof XSSFPicture) {
+                        XSSFPicture picture = (XSSFPicture) shape;
+                        XSSFClientAnchor anchor = picture.getClientAnchor();
+                        int imageIndex = Arrays.asList("Vegetables", "Food", "CHAAT").contains(majorCategoryId) ? 10 : 13;
+                        if (anchor.getRow1() != 0 && anchor.getCol1() == imageIndex) {
+                            images.add(picture);
+                        }
+                    }
+                }
+
                 try (OutputStream outputStream = Files.newOutputStream(Paths.get(outputFilePath))) {
                     outputWorkbook.write(outputStream);
-                    return getProductItemDTOList(Optional.of(outputWorkbook), images, storeId);
+                    return getProductItemDTOList(Optional.of(outputWorkbook), images, storeId, majorCategoryId);
                 }
             }
         }
@@ -60,7 +76,7 @@ public class MultipartFileToXLSXConverter {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private List<ProductItemDTO> getProductItemDTOList(Optional<Workbook> uploadedData, List<?> images, String storeId) throws Exception {
+    private List<ProductItemDTO> getProductItemDTOList(Optional<Workbook> uploadedData, List<XSSFPicture> images, String storeId, String majorCategoryId) throws Exception {
         if (!uploadedData.isPresent()) {
             throw new Exception("Unable to upload");
         }
@@ -68,45 +84,232 @@ public class MultipartFileToXLSXConverter {
         Sheet sheet = uploadedData.get().getSheetAt(0);
         List<ProductItemDTO> productItemDTOList = new ArrayList<>();
         int i = 0;
-        for (Row row : sheet) {
-            if (row.getCell(0) == null || row.getRowNum() == 0) continue;
-            String name = row.getCell(0).getStringCellValue();
-            String description = getStringValueByIndex(row, 1, "-");
-            String category = row.getCell(2).getStringCellValue();
-            String categoryTag = getStringValueByIndex(row, 3, category);
-            String subCategory = getStringValueByIndex(row, 4, category);
-            Double mrpPrice = (Double) getValueByIndex(row, 5);
-            Double sellingPrice = (Double) getValueByIndex(row, 6);
-            Double discount = (Double) getValueByIndex(row, 7);
-            String productVariation = getStringValueByIndex(row, 8, "-");
-            Integer stock = getIntegerValue(row);
-            String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll(" ", "-");
-            String tags = row.getCell(11).getStringCellValue().toLowerCase();
+        if (majorCategoryId.equals("Groceries")) {
+            try {
+                for (Row row : sheet) {
+                    if (row.getCell(0).getCellType() == CellType.BLANK || row.getRowNum() == 0) continue;
+                    String name = row.getCell(0).getStringCellValue();
+                    String scannerId = (String) getValueByIndex(row, 1, true);
+                    String brand = getStringValueByIndex(row, 2, "-");
+                    String description = getStringValueByIndex(row, 3, "-");
+                    String category = row.getCell(5).getStringCellValue();
+                    String categoryTag = getStringValueByIndex(row, 6, category);
+                    String subCategory = getStringValueByIndex(row, 6, category);
 
-            ProductItemDTO itemDTO = new ProductItemDTO();
-            itemDTO.setStoreId(storeId);
-            itemDTO.setId(storeId+id);
-            itemDTO.setProductName(name);
-            itemDTO.setDescription(description);
-            itemDTO.setCategoryNameOrId(category);
-            itemDTO.setSubCategoryTags(categoryTag);
-            itemDTO.setSubCategoryNameOrId(subCategory);
-            itemDTO.setMrpPrice(mrpPrice);
-            itemDTO.setSellingPrice(sellingPrice);
-            itemDTO.setDiscount(discount);
-            itemDTO.setProductVariation(productVariation);
-            itemDTO.setStock(stock);
-            if (images.size() > i)
-                itemDTO.setImage(convertToMultipartFile((PictureData) images.get(i++)));
-            itemDTO.setTags(tags);
-            productItemDTOList.add(itemDTO);
+                    String[] productVariation;
+                    try {
+                        productVariation = getStringValueByIndex(row, 10, "-").split(",");
+                    } catch (Exception ignored) {
+                        productVariation = new String[]{};
+                    }
+
+                    Double[] mrpPrice = getDoubleListByIndex(row, 7);
+                    Double[] sellingPrice = getDoubleListByIndex(row, 8);
+
+                    Double discount = (Double) getValueByIndex(row, 9, false);
+
+                    Integer[] stock = getIntListByIndex(row, 11);
+                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
+                    String tags = "";
+                    try {
+                        tags = row.getCell(14).getStringCellValue().toLowerCase();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    ProductItemDTO itemDTO = new ProductItemDTO();
+                    itemDTO.setStoreId(storeId);
+                    itemDTO.setScannerId(scannerId);
+                    itemDTO.setBrand(brand);
+                    itemDTO.setId(storeId + id);
+                    itemDTO.setProductName(name);
+                    itemDTO.setDescription(description);
+                    itemDTO.setCategoryNameOrId(category);
+                    itemDTO.setSubCategoryTags(categoryTag);
+                    itemDTO.setSubCategoryNameOrId(subCategory);
+                    itemDTO.setMrpPrice(mrpPrice);
+                    itemDTO.setSellingPrice(sellingPrice);
+                    itemDTO.setDiscount(discount);
+                    itemDTO.setProductVariation(productVariation);
+                    itemDTO.setStock(stock);
+                    itemDTO.setMajorCategoryId(majorCategoryId);
+                    if (images.size() > i) {
+                        itemDTO.setImageFile(convertXSSFPictureToMultipartFile(images.get(i++)));
+                    }
+                    itemDTO.setTags(tags);
+                    productItemDTOList.add(itemDTO);
+                }
+            } catch (Exception e) {
+                System.out.println("Groceries exception : " + e);
+            }
+        } else if (Arrays.asList("Fashion", "Fancy").contains(majorCategoryId)) {
+            try {
+                for (Row row : sheet) {
+                    if (row.getCell(0).getCellType() == CellType.BLANK || row.getRowNum() == 0) continue;
+                    String name = row.getCell(0).getStringCellValue();
+                    String brand = getStringValueByIndex(row, 1, "-");
+                    String description = getStringValueByIndex(row, 2, "-");
+                    String category = row.getCell(4).getStringCellValue();
+                    String categoryTag = getStringValueByIndex(row, 5, category);
+                    String subCategory = getStringValueByIndex(row, 5, category);
+
+                    String[] size;
+                    String[] color;
+
+                    Double[] mrpPrice = getDoubleListByIndex(row, 6);
+                    Double[] sellingPrice = getDoubleListByIndex(row, 7);
+
+                    Double discount = (Double) getValueByIndex(row, 8, false);
+
+                    try {
+                        color = getStringValueByIndex(row, 9, "-").split(",");
+                    } catch (Exception ignored) {
+                        color = new String[]{};
+                    }
+
+                    try {
+                        size = getStringValueByIndex(row, 10, "-").split(",");
+                    } catch (Exception ignored) {
+                        size = new String[]{};
+                    }
+
+                    Integer[] stock = getIntListByIndex(row, 11);
+                    String scannerId = (String) getValueByIndex(row, 12, true);
+                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
+                    String tags = "";
+                    try {
+                        tags = row.getCell(14).getStringCellValue().toLowerCase();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    ProductItemDTO itemDTO = new ProductItemDTO();
+                    itemDTO.setStoreId(storeId);
+                    itemDTO.setScannerId(scannerId);
+                    itemDTO.setBrand(brand);
+                    itemDTO.setId(storeId + id);
+                    itemDTO.setProductName(name);
+                    itemDTO.setDescription(description);
+                    itemDTO.setCategoryNameOrId(category);
+                    itemDTO.setSubCategoryTags(categoryTag);
+                    itemDTO.setSubCategoryNameOrId(subCategory);
+                    itemDTO.setMrpPrice(mrpPrice);
+                    itemDTO.setSellingPrice(sellingPrice);
+                    itemDTO.setDiscount(discount);
+                    itemDTO.setProductVariation(size);
+                    itemDTO.setStock(stock);
+                    itemDTO.setMajorCategoryId(majorCategoryId);
+                    itemDTO.setColor(color);
+                    itemDTO.setColor(size);
+                    if (images.size() > i) {
+                        itemDTO.setImageFile(convertXSSFPictureToMultipartFile(images.get(i++)));
+                    }
+                    itemDTO.setTags(tags);
+                    productItemDTOList.add(itemDTO);
+                }
+            } catch (Exception e) {
+                System.out.println("Fashion / Fancy Conversion Exception : " + e);
+            }
+        } else if (Arrays.asList("Vegetables", "Food", "CHAAT").contains(majorCategoryId)) {
+            try {
+                for (Row row : sheet) {
+                    if (row.getCell(0).getCellType() == CellType.BLANK || row.getRowNum() == 0) continue;
+                    String name = row.getCell(0).getStringCellValue();
+                    String description = getStringValueByIndex(row, 1, "-");
+                    String scannerId = "-";
+                    String brand = "-";
+                    String category = row.getCell(3).getStringCellValue();
+                    String categoryTag = getStringValueByIndex(row, 4, category);
+                    String subCategory = getStringValueByIndex(row, 4, category);
+
+                    Double[] mrpPrice = getDoubleListByIndex(row, 5);
+                    Double[] sellingPrice = getDoubleListByIndex(row, 6);
+                    Double discount = (Double) getValueByIndex(row, 7, false);
+
+                    String[] productVariation;
+                    try {
+                        productVariation = getStringValueByIndex(row, 8, "-").split(",");
+                    } catch (Exception ignored) {
+                        productVariation = new String[]{};
+                    }
+
+                    Integer[] stock = getIntListByIndex(row, 9);
+                    String id = row.getCell(0).getStringCellValue().toLowerCase().replaceAll("[^a-zA-Z0-9]", "-");
+                    String tags = "";
+                    try {
+                        tags = row.getCell(11).getStringCellValue().toLowerCase();
+                    } catch (Exception ignored) {
+
+                    }
+
+                    ProductItemDTO itemDTO = new ProductItemDTO();
+                    itemDTO.setStoreId(storeId);
+                    itemDTO.setScannerId(scannerId);
+                    itemDTO.setBrand(brand);
+                    itemDTO.setId(storeId + id);
+                    itemDTO.setProductName(name);
+                    itemDTO.setDescription(description);
+                    itemDTO.setCategoryNameOrId(category);
+                    itemDTO.setSubCategoryTags(categoryTag);
+                    itemDTO.setSubCategoryNameOrId(subCategory);
+                    itemDTO.setMrpPrice(mrpPrice);
+                    itemDTO.setSellingPrice(sellingPrice);
+                    itemDTO.setDiscount(discount);
+                    itemDTO.setProductVariation(productVariation);
+                    itemDTO.setStock(stock);
+                    itemDTO.setMajorCategoryId(majorCategoryId);
+                    if (images.size() > i) {
+                        try {
+                            itemDTO.setImageFile(convertXSSFPictureToMultipartFile(images.get(i++)));
+                        } catch (Exception ignored) {
+
+                        }
+                    }
+                    try {
+                        itemDTO.setTags(tags);
+                    } catch (Exception ignored) {
+
+                    }
+                    productItemDTOList.add(itemDTO);
+                }
+            } catch (Exception e) {
+                System.out.println("Veg Conversion Exception : " + e);
+            }
         }
         return productItemDTOList;
     }
 
-    private Object getValueByIndex(Row row, int index) {
+    private Double[] getDoubleListByIndex(Row row, int index) {
         try {
-            return row.getCell(index).getNumericCellValue();
+            if (row.getCell(index).getCellType() == CellType.NUMERIC) {
+                Double value = row.getCell(index).getNumericCellValue();
+                row.getCell(index).setCellValue(value + ",");
+            }
+            String[] price = row.getCell(index).getStringCellValue().split(",");
+            return Arrays.stream(price).map(Double::parseDouble).toArray(Double[]::new);
+        } catch (Exception e) {
+            return new Double[]{};
+        }
+    }
+
+    private Integer[] getIntListByIndex(Row row, int index) {
+        try {
+            if (row.getCell(index).getCellType() == CellType.NUMERIC) {
+                Double value = row.getCell(index).getNumericCellValue();
+                row.getCell(index).setCellValue(value + ",");
+            }
+            String[] stock = row.getCell(index).getStringCellValue().split(",");
+            return Arrays.stream(stock).map(Float::parseFloat).map(Math::round).toArray(Integer[]::new);
+        } catch (Exception e) {
+            return new Integer[]{};
+        }
+    }
+
+    private Object getValueByIndex(Row row, int index, boolean isString) {
+        Object object;
+        try {
+            object = row.getCell(index).getNumericCellValue();
+            return isString ? object + "" : object;
         } catch (Exception e) {
             return 0.0;
         }
@@ -119,16 +322,17 @@ public class MultipartFileToXLSXConverter {
             return defaultValue;
         }
     }
-    private Integer getIntegerValue(Row row) {
-        try {
-            return (int) row.getCell(9).getNumericCellValue();
-        } catch (Exception e) {
-            return 0;
-        }
-    }
 
     public MultipartFile convertToMultipartFile(PictureData picture) {
         String filename = "image." + picture.suggestFileExtension();
         return new PictureDataMultipartFile(picture, filename);
     }
+
+    public static MultipartFile convertXSSFPictureToMultipartFile(XSSFPicture picture) throws IOException {
+        if (picture == null) return null;
+        byte[] imageData = picture.getPictureData().getData();
+
+        return new ByteArrayMultipartFile("imageFile", "image.png", "image/png", imageData);
+    }
+
 }

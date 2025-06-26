@@ -2,7 +2,7 @@ package com.arv.api.service;
 
 import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.StoreInfo;
-import com.arv.api.model.dto.request.product.StoreDTO;
+import com.arv.api.model.dto.request.StoreDTO;
 import com.arv.api.model.dto.response.StoreList;
 import com.arv.api.repository.crud.StoreRepository;
 import com.arv.api.repository.data.StoreDtoRepository;

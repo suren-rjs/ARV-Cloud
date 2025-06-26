@@ -3,6 +3,8 @@ package com.arv.api.controller;
 import com.arv.api.helper.GlobalCommonService;
 import com.arv.api.model.document.ProductCategory;
 import com.arv.api.model.document.ProductSubCategory;
+import com.arv.api.model.dto.request.ProductCategoryDTO;
+import com.arv.api.model.dto.request.ProductSubCategoryDTO;
 import com.arv.api.model.dto.response.CategoryList;
 import com.arv.api.model.dto.response.SubCategoryList;
 import com.arv.api.repository.crud.ProductCategoryRepository;
@@ -17,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @SuppressWarnings("All")
@@ -46,6 +49,17 @@ public class ProductCategoryController {
         return globalCommonService.getResponseOfObject(Optional.of(categoryList), HttpStatus.OK);
     }
 
+    @GetMapping("/productCategories/all")
+    public ResponseEntity<?> getCategoriesList(@RequestParam(required = false, defaultValue = "") String keyword) {
+        List<ProductCategory> productCategories;
+        if (keyword.replaceAll(" ", "").isEmpty())
+            productCategories = productCategoryRepository.findAll();
+        else
+            productCategories = productCategoryRepository.findByNameContainingIgnoreCase(keyword);
+        CategoryList categoryList = new CategoryList(productCategories, 0, productCategories.size(), 0);
+        return globalCommonService.getResponseOfObject(Optional.of(categoryList), HttpStatus.OK);
+    }
+
     @GetMapping("/productCategories/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable String id) {
         String message = "Invalid id";
@@ -66,7 +80,7 @@ public class ProductCategoryController {
     }
 
     @PutMapping("/productCategories")
-    public ResponseEntity<?> updateCategoryById(@RequestBody ProductCategory productCategory) {
+    public ResponseEntity<?> updateCategoryById(@RequestBody ProductCategoryDTO productCategory) {
         String message = "Invalid id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
         if (productCategory.getId() == null) {
@@ -74,7 +88,7 @@ public class ProductCategoryController {
         }
         message = "Category updated";
         status = HttpStatus.OK;
-        productCategoryService.saveCategory(productCategory);
+        productCategoryService.updateCategory(productCategory);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
@@ -92,15 +106,31 @@ public class ProductCategoryController {
     }
 
     @GetMapping("/productSubCategories")
-    public ResponseEntity<?> getSubSubCategories(@RequestParam String categoryId, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
+    public ResponseEntity<?> getSubSubCategories(@RequestParam(required = false, defaultValue = "") String categoryId, @RequestParam(required = false, defaultValue = "") String keyword, @RequestParam(required = false, defaultValue = "0") int pageNumber) {
         Pageable pageable = PageRequest.of(pageNumber, 15);
         Page<ProductSubCategory> page;
-        if (keyword.replaceAll(" ", "").isEmpty())
+        if (categoryId.equals(""))
+            page = productSubCategoryRepository.findAll(pageable);
+        else if (keyword.replaceAll(" ", "").isEmpty())
             page = productSubCategoryRepository.findAllByCategoryId(categoryId, pageable);
         else
             page = productSubCategoryRepository.findAllByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword, pageable);
 
         SubCategoryList subCategoryList = new SubCategoryList(page.getContent(), pageNumber, page.getTotalElements(), globalCommonService.getTotalPage(page.getTotalPages()));
+        return globalCommonService.getResponseOfObject(Optional.of(subCategoryList), HttpStatus.OK);
+    }
+
+    @GetMapping("/productSubCategories/all")
+    public ResponseEntity<?> getSubSubCategoriesList(@RequestParam(required = false, defaultValue = "") String categoryId, @RequestParam(required = false, defaultValue = "") String keyword) {
+        List<ProductSubCategory> subCategories;
+        if (categoryId.equals(""))
+            subCategories = productSubCategoryRepository.findAll();
+        else if (keyword.replaceAll(" ", "").isEmpty())
+            subCategories = productSubCategoryRepository.findAllByCategoryId(categoryId);
+        else
+            subCategories = productSubCategoryRepository.findAllByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword);
+
+        SubCategoryList subCategoryList = new SubCategoryList(subCategories, 0, subCategories.size(), 0);
         return globalCommonService.getResponseOfObject(Optional.of(subCategoryList), HttpStatus.OK);
     }
 
@@ -116,7 +146,7 @@ public class ProductCategoryController {
     }
 
     @PostMapping("/productSubCategories")
-    public ResponseEntity<?> saveSubCategories(@RequestBody ProductSubCategory productSubCategory) {
+    public ResponseEntity<?> saveSubCategories(@RequestBody ProductSubCategoryDTO productSubCategory) {
         String message = "new sub category created";
         HttpStatus status = HttpStatus.OK;
         productCategoryService.saveSubCategories(productSubCategory);
@@ -124,15 +154,15 @@ public class ProductCategoryController {
     }
 
     @PutMapping("/productSubCategories")
-    public ResponseEntity<?> updateSubCategoriesById(@RequestBody ProductSubCategory productSubCategory) {
+    public ResponseEntity<?> updateSubCategoriesById(@RequestBody ProductSubCategoryDTO productSubCategory) {
         String message = "Invalid sub category id";
         HttpStatus status = HttpStatus.NOT_ACCEPTABLE;
         if (productSubCategory.getId() == null) {
             return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
         }
-        message = "Category updated";
+        message = "Sub Category updated";
         status = HttpStatus.OK;
-        productCategoryService.saveSubCategories(productSubCategory);
+        productCategoryService.updateSubCategories(productSubCategory);
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 

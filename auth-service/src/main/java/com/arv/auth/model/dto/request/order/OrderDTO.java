@@ -1,7 +1,7 @@
 package com.arv.auth.model.dto.request.order;
 
 import com.arv.auth.model.dto.request.cart.CartDto;
-import com.arv.auth.model.enums.PaymentMode;
+import com.arv.auth.model.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,8 +16,30 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderDTO {
     @NonNull
-    private List<CartDto> orderItems;
-    private PaymentMode paymentMode = PaymentMode.WALLET;
+    private List<OrderItemDetail> orderItems;
+    private String paymentId;
+    private PaymentMode paymentMode = PaymentMode.COD;
+    private PaymentStatus paymentStatus = PaymentStatus.WAITING_FOR_PAYMENT;
+    private OrderStatus orderStatus = OrderStatus.WAITING;
+    private ReturnStatus returnStatus;
+    private CancellationStatus cancellationStatus = CancellationStatus.NOT_CANCELLED;
+    private String cancellationReason;
+    private Boolean isCancelledOrder = false;
+    private Boolean isReturnOrder = false;
     private String addressId;
-    private Timestamp orderedDate = new Timestamp(new Date().getTime());
+    @NonNull
+    private String accessToken;
+    private Date orderedDate = new Date();
+    private Date placedDate;
+    private Date expectedDeliveryDate;
+    private Date deliveredDate;
+    private Double orderValue;
+    private Double deliveryCharge;
+    private Double taxPercentage;
+    private Double totalAmount;
+    private String couponCode;
+    private Double discountedPrice;
+    private Double couponDiscountPercentage;
+    private Double finalPrice;
+    private Double deliveryBoyTip;
 }

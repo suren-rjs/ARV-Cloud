@@ -1,8 +1,21 @@
 spring:
   application:
     name: ARV-CLOUD-GATEWAY
+  profiles:
+    active: production
   cloud:
     gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - AddResponseHeader=Access-Control-Allow-Origin, *
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
       routes:
         - id: arv-admin-service
           uri: lb://ARV-IDENTITY-SERVICE
@@ -14,7 +27,7 @@ spring:
         - id: arv-identity-service
           uri: lb://ARV-IDENTITY-SERVICE
           predicates:
-            - Path=/help, /auth/**, /swagger-ui/**, /v3/**, /address, /address/**, /wishlist, /wishlist/**, /cart, /cart/**
+            - Path=/help, /auth/**, /swagger-ui/**, /v3/**, /address, /address/**, /wishlist, /wishlist/**, /cart, /cart/**, /orders, /orders/**, /features, /features/**, /homeBanner, /homeBanner/**, /api, /api/**, /couponCode, /couponCode/**, /employee, /employee/**
           filters:
             - name: CircuitBreaker
               args:
@@ -24,7 +37,7 @@ spring:
         - id: arv-product-manager-service
           uri: lb://ARV-PRODUCT-SERVICE
           predicates:
-            - Path=/products, /productCategories, /productSubCategories, /products/*, /productCategories/**, /productSubCategories/**,
+            - Path=/products, /productCategories, /productSubCategories, /products/**, /productCategories/**, /productSubCategories/**,
           filters:
             - ManagerFilter
 
@@ -38,7 +51,7 @@ spring:
                 name: arv-product-service
                 fallbackuri: forward:/productFallBack
 server:
-  port: 8080
+  port: 8090
 
 management:
   endpoints:
@@ -46,20 +59,19 @@ management:
       exposure:
         include: hystrix.stream
 
-hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 10000
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 20000
 ribbon:
-  ConnectTimeout: 3000
-  ReadTimeout: 10000
+  ConnectTimeout: 20000
+  ReadTimeout: 20000
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      #      defaultZone: http://ec2-16-171-32-172.eu-north-1.compute.amazonaws.com:8761/eureka
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://34.93.69.101:8761/eureka
   instance:
-    hostname: localhost
+    hostname: 34.93.69.101
 
 
 #    private final String[] MANAGER_END_POINTS = {"/products/**", "/productCategories", "/productSubCategories", "/productSubSubCategories", "/notification"};

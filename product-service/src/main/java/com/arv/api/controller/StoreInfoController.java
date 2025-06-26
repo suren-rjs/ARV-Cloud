@@ -1,7 +1,7 @@
 package com.arv.api.controller;
 
 import com.arv.api.helper.GlobalCommonService;
-import com.arv.api.model.dto.request.product.StoreDTO;
+import com.arv.api.model.dto.request.StoreDTO;
 import com.arv.api.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-@SuppressWarnings("All")
+@SuppressWarnings("unused")
 @RestController
 @RequestMapping(value = "/store", produces = MediaType.APPLICATION_JSON_VALUE)
 public class StoreInfoController {
     @Autowired
-    protected StoreService storeService;
+    private StoreService storeService;
 
     @Autowired
-    protected GlobalCommonService globalCommonService;
+    private GlobalCommonService globalCommonService;
 
     @PostMapping
     public ResponseEntity<?> addStoreInfo(@RequestBody StoreDTO storeInfo) {
@@ -39,6 +39,12 @@ public class StoreInfoController {
         }
 
         return globalCommonService.getResponseEntityByMessageAndStatus(message, response);
+    }
+
+    @GetMapping("/deliveryPrice")
+    public ResponseEntity<?> getDeliveryPrice(@RequestParam(defaultValue = "") String locationId) {
+        // TODO: Delivery Price Calculation implementation
+        throw new RuntimeException("Unimplemented method");
     }
 
     @DeleteMapping("/{id}")

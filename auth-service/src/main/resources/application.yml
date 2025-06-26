@@ -1,13 +1,32 @@
 spring:
   application:
     name: ARV-IDENTITY-SERVICE
+  cors:
+    allowed-origins: "*"
+    allowed-methods: "*"
+    allowed-headers: "*"
+    allow-credentials: false
+    max-age: 3600
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-#      defaultZone: http://ec2-35-172-119-179.compute-1.amazonaws.com:8761/eureka
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://34.93.69.101:8761/eureka
   instance:
-    hostname: localhost
+    hostname: 34.93.69.101
+
+cloud:
+  aws:
+    credentials:
+      access-key: AKIA2KE7J7V6ZF6KTFN6
+      secret-key: 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
+    region:
+      static: ap-south-1
+    stack:
+      auto: false
+
+application:
+  bucket:
+    name: arv-exclusive-bucket

@@ -2,8 +2,7 @@ package com.arv.auth.controller;
 
 import com.arv.auth.helper.GlobalCommonService;
 import com.arv.auth.model.dto.request.order.OrderDTO;
-import com.arv.auth.model.enums.PaymentMode;
-import com.arv.auth.model.enums.ReturnStatus;
+import com.arv.auth.model.enums.*;
 import com.arv.auth.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +30,33 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/ordersByPaymentStatus")
+    private ResponseEntity<?> ordersByPaymentStatus(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "WAITING_FOR_PAYMENT") PaymentStatus paymentStatus,
+            @RequestParam(required = false, defaultValue = "") String orderId
+
+    ) {
+        try {
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findByPaymentStatusAndOrderIdContaining(paymentStatus, orderId, page)), HttpStatus.OK);
+        } catch (Exception e) {
+            return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/ordersByOrderStatus")
+    private ResponseEntity<?> ordersByOrderStatus(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "WAITING") OrderStatus orderStatus,
+            @RequestParam(required = false, defaultValue = "") String orderId
+    ) {
+        try {
+            return globalCommonService.getResponseOfObject(Optional.of(orderService.findByOrderStatusAndOrderIdContaining(orderStatus, orderId, page)), HttpStatus.OK);
+        } catch (Exception e) {
+            return globalCommonService.getResponseEntityByMessageAndStatus(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/{id}")
     private ResponseEntity<?> getOrder(@PathVariable String id) {
         try {
@@ -44,17 +70,18 @@ public class OrderController {
     private ResponseEntity<?> newOrder(@RequestBody OrderDTO orderDTO) {
         HttpStatus status;
         String message = "Order placement success!";
+        System.out.println(orderDTO.toString());
         try {
             status = HttpStatus.OK;
             orderService.newOrder(orderDTO);
         } catch (Exception e) {
             status = HttpStatus.NOT_ACCEPTABLE;
-            message = "Something went wrong!, unable to place your order!";
+            message = e.getMessage();
         }
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/placeOrder/{id}")
     private ResponseEntity<?> placeOrder(@PathVariable String id) {
         HttpStatus status;
         String message = "Order placement success!";
@@ -68,7 +95,7 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/cancelOrder/{id}")
     private ResponseEntity<?> cancelOrder(@PathVariable String id) {
         HttpStatus status;
         String message = "Cancellation in progress!";
@@ -82,13 +109,13 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
-    private ResponseEntity<?> outForDelivery(@PathVariable String id) {
+    @PostMapping("/outForDelivery/{id}")
+    private ResponseEntity<?> outForDelivery(@PathVariable String id, @RequestParam String employeeId) {
         HttpStatus status;
         String message = "Order status updated!";
         try {
             status = HttpStatus.OK;
-            orderService.outForDelivery(id);
+            orderService.outForDelivery(id, employeeId);
         } catch (Exception e) {
             status = HttpStatus.NOT_ACCEPTABLE;
             message = "Something went wrong!, unable to process order!";
@@ -96,7 +123,7 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/complete/{id}")
     private ResponseEntity<?> completeDelivery(@PathVariable String id) {
         HttpStatus status;
         String message = "Order status updated!";
@@ -110,7 +137,7 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/updateDeliveryAddress/{id}")
     private ResponseEntity<?> updateDeliveryAddress(@PathVariable String id, @RequestParam String addressId) {
         HttpStatus status;
         String message = "Order address updated!";
@@ -124,7 +151,7 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/return/{id}")
     private ResponseEntity<?> requestReturn(@PathVariable String id) {
         HttpStatus status;
         String message = "Return status progressing!";
@@ -138,7 +165,7 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/changePaymentMode/{id}")
     private ResponseEntity<?> changePaymentMode(@PathVariable String id, @RequestParam PaymentMode paymentMode) {
         HttpStatus status;
         String message = "PaymentMode updated!";
@@ -152,7 +179,7 @@ public class OrderController {
         return globalCommonService.getResponseEntityByMessageAndStatus(message, status);
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/cancelReturn/{id}")
     private ResponseEntity<?> changeReturnStatus(@PathVariable String id, @RequestParam ReturnStatus returnStatus) {
         HttpStatus status;
         String message = "Return status updated!";

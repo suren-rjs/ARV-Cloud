@@ -3,11 +3,16 @@ package com.arv.auth.repository.data;
 import com.arv.auth.model.document.Order;
 import com.arv.auth.model.dto.request.order.OrderDTO;
 import com.arv.auth.model.dto.request.order.OrderList;
-import com.arv.auth.model.enums.PaymentMode;
-import com.arv.auth.model.enums.ReturnStatus;
+import com.arv.auth.model.enums.*;
+
+import java.util.Date;
 
 public interface OrderDtoRepository {
     OrderList findAllByUserId(int page);
+
+    OrderList findByPaymentStatusAndOrderIdContaining(PaymentStatus paymentStatus, String orderId, int pageNumber);
+
+    OrderList findByOrderStatusAndOrderIdContaining(OrderStatus orderStatus, String orderId, int pageNumber);
 
     Boolean isExistsById(String id);
 
@@ -21,7 +26,7 @@ public interface OrderDtoRepository {
 
     void placeOrder(String orderId);
 
-    void outForDelivery(String orderId);
+    void outForDelivery(String orderId, String employeeId);
 
     void completeDelivery(String orderId);
 

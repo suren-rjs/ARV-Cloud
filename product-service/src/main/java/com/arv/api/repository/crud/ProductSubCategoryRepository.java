@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProductSubCategoryRepository extends MongoRepository<ProductSubCategory, String> {
@@ -16,4 +17,8 @@ public interface ProductSubCategoryRepository extends MongoRepository<ProductSub
     Optional<ProductSubCategory> findOneByCategoryIdAndId(String categoryId, String id);
 
     Page<ProductSubCategory> findAllByCategoryIdAndNameContainingIgnoreCase(String categoryId, String name, Pageable pageable);
+
+    List<ProductSubCategory> findAllByCategoryId(String categoryId);
+
+    List<ProductSubCategory> findAllByCategoryIdAndNameContainingIgnoreCase(String categoryId, String keyword);
 }

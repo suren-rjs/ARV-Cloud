@@ -2,19 +2,20 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="product-service" />
         <module name="auth-service" />
-        <module name="order-service" />
         <module name="cloud-gateway" />
         <module name="service-registry" />
         <module name="hystrix-dashboard" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="order-service" target="1.8" />
       <module name="product-service (1)" target="1.8" />
       <module name="product-service (2)" target="1.8" />
     </bytecodeTargetLevel>

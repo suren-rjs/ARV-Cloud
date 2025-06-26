@@ -16,4 +16,6 @@ public interface ProductCategoryRepository extends MongoRepository<ProductCatego
     Optional<ProductCategory> findOneByNameOrId(String name, String id);
 
     Page<ProductCategory> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    List<ProductCategory> findByNameContainingIgnoreCase(String keyword);
 }
